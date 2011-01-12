@@ -1,0 +1,10 @@
+menuconfig MISC
+	bool "Misc devices support"
+
+if MISC
+
+config AT24
+	bool "at24 based eeprom"
+	depends on I2C
+
+endif
