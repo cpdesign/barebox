@@ -251,6 +251,7 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	strcpy(client->dev.name, chip->type);
 	client->dev.type_data = client;
 	client->dev.platform_data = chip->platform_data;
+	client->dev.id = -1;
 	client->adapter = adapter;
 	client->addr = chip->addr;
 
