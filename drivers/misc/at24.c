@@ -105,7 +105,7 @@ static int at24_probe(struct device_d *dev)
 	dev->priv = at24;
 	pdata = dev->platform_data;
 
-	at24->cdev.name = DRIVERNAME;
+	at24->cdev.name = make_cdev_name("eeprom", pdata->id);
 	at24->client = to_i2c_client(dev);
 	at24->cdev.size = pdata->size;
 	at24->cdev.dev = dev;
