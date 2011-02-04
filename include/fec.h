@@ -35,6 +35,8 @@ typedef enum {
 	RMII,
 } xceiver_type;
 
+struct eth_device;
+
 /*
  * Define the phy connected externally for FEC drivers
  * (like MPC52xx and i.MX27)
@@ -42,6 +44,8 @@ typedef enum {
 struct fec_platform_data {
         xceiver_type	xcv_type;
 	int		phy_addr;
+
+	int (*get_hwaddr)(struct eth_device *dev, unsigned char *mac);
 };
 
 #endif /* __INCLUDE_NETWORK_FEC_H */
