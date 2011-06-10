@@ -96,6 +96,11 @@ static unsigned long get_3_3_div(unsigned long in)
 	return (((in >> 3) & 0x7) + 1) * ((in & 0x7) + 1);
 }
 
+static unsigned long get_6_div(unsigned long in)
+{
+	return ((in & 0x3f) + 1);
+}
+
 static unsigned long imx_get_ipg_perclk(void)
 {
 	ulong pdr0 = readl(IMX_CCM_BASE + CCM_PDR0);
