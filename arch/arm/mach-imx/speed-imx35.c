@@ -169,10 +169,11 @@ unsigned long imx_get_uartclk(void)
 		return imx_get_ppllclk() / div;
 }
 
+/* mmc0 clk only */
 unsigned long imx_get_mmcclk(void)
 {
 	unsigned long pdr3 = readl(IMX_CCM_BASE + CCM_PDR3);
-	unsigned long div = get_3_3_div(pdr3);
+	unsigned long div = get_6_div(pdr3);
 
 	if (pdr3 & (1 << 6))
 		return imx_get_armclk() / div;
