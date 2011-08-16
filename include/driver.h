@@ -387,6 +387,7 @@ struct cdev {
 
 int devfs_create(struct cdev *);
 int devfs_remove(struct cdev *);
+char *make_cdev_name(const char *template, int prefid);
 struct cdev *cdev_by_name(const char *filename);
 struct cdev *cdev_open(const char *name, unsigned long flags);
 void cdev_close(struct cdev *cdev);

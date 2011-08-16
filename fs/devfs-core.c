@@ -29,6 +29,47 @@
 
 LIST_HEAD(cdev_list);
 
+/**
+ * Allocates a unique name for a cdev based on existing cdevs.
+ *
+ * @param template Starting point for the name of the device.
+ * The name can optionally contain a "%d" marker to designate where the
+ * device number should be inserted into the device string. If no marker
+ * is specified then one is appended.
+ *
+ * @param prefid Preferred device id. Any id less than zero will default
+ * to start from 0.
+ */
+char *make_cdev_name(const char *template, int prefid)
+{
+	char *name = 0;
+	char *temp;
+	int id;
+	struct cdev *cdev;
+
+	/* if there is no template for number, append one */
+	if (!strstr(template, "%d"))
+		temp = asprintf("%s%%d", template);
+	else
+		temp = strdup(template);
+
+	id = (prefid < 0) ? 0 : prefid;
+
+	do {
+		free(name);
+		name = asprintf(temp, id);
+
+		cdev = cdev_by_name(name);
+		if (cdev && (id == prefid))
+			printf("WARN: preferred device name %s already used\n",
+					name);
+		++id;
+	} while (cdev);
+
+	free(temp);
+	return name;
+}
+
 struct cdev *cdev_by_name(const char *filename)
 {
 	struct cdev *cdev;
