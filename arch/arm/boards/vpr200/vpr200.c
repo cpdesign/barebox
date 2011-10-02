@@ -623,19 +623,12 @@ static int vpr_devices_init(void)
 
 	imx35_add_fec(&fec_info);
 
-//	register_device(&sdram0_dev);
-//	register_device(&sdram1_dev);
-
 	imx35_add_fb(&ipu_fb_data);
 
 	vpr_bp_init();
 	vpr_rfprog_init();
 	vpr_button_init();
 	vpr_buzzer_init();
-
-
-//	armlinux_add_dram(&sdram0_dev);
-//	armlinux_add_dram(&sdram1_dev);
 
 	armlinux_set_bootparams((void *)0x80000100);
 
