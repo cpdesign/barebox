@@ -33,7 +33,7 @@ else
 		kernel_loc=mmc
 	fi
 
-	buzzer -f 880 -d 75 && buzzer -f 440 -d 75 && buzzer -f 1760 -d 150
+	buzzer -f 440 -d 50 && buzzer -f 1760 -d 50
 fi
 
 if [ x$ip = xdhcp ]; then
