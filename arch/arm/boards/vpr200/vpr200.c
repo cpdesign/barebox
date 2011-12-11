@@ -1229,3 +1229,30 @@ BAREBOX_CMD_START(isl22316)
 	.cmd	= do_isl22316,
 	.usage  = "Set isl22316 device value",
 BAREBOX_CMD_END
+
+static int do_vprbacklight(struct command *cmdtp, int argc, char* argv[])
+{
+	int setval = -1;
+	int opt;
+
+	while ((opt = getopt(argc, argv, "s:")) > 0) {
+		switch (opt) {
+		case 's':
+			setval = simple_strtol(optarg, NULL, 0);
+			break;
+		}
+	}
+
+	if (setval >= 0) {
+		vpr_backlight_set(setval);
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
+BAREBOX_CMD_START(vprbacklight)
+	.cmd	= do_vprbacklight,
+	.usage  = "Set backlight value",
+BAREBOX_CMD_END
+
