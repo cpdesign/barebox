@@ -193,7 +193,7 @@ static struct i2c_board_info i2c0_devices[] = {
 	{
 		I2C_BOARD_INFO("mc13892-i2c", 0x08),
 	}, {
-		I2C_BOARD_INFO("at24", 0x50),
+		I2C_BOARD_INFO("eeprom", 0x50),
 	},
 };
 
