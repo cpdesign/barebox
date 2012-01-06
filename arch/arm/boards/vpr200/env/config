@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# use 'dhcp' to do dhcp in barebox and in kernel
+# use 'no' if you don't want to pass the ip from barebox to the kernel
+ip=no
+
+# or set your networking parameters here
+#eth0.ipaddr=10.1.40.90
+#eth0.netmask=255.255.255.0
+#eth0.gateway=a.b.c.d
+#eth0.serverip=10.1.40.110
+
+# can be either 'net', 'nor', 'nand' or 'mmc'
+kernel_loc=nor
+rootfs_loc=nand
+
+# 'ubifs' for flash, 'ext3' for mmc
+rootfs_type=ubifs
+
+if [ x$barebox_loc = xmmc ]; then
+	kernel_loc=mmc
+	rootfs_loc=mmc
+	rootfs_type=ext3
+else
+	nor_perm=ro
+fi
+
+kernel=uImage
+rootfs=vpr200v1-rootfs
+envimage=vpr200-env
+
+autoboot_timeout=3
+
+nfsroot="/srv/nfs/vpr200v1"
+bootargs="console=ttymxc0,115200 quiet"
+debugargs="jtag=on nohlt debug earlyprintk=ttymxc0,115200"
+
+nor_parts="512k(barebox)$nor_perm,512k(bareboxenv)$nor_perm,4M(kernel)$nor_perm,-(scratch)"
+rootfs_mtdblock_nor=3
+
+nand_parts="120M(rootfs),-(data)"
+rootfs_mtdblock_nand=4
+
+# extra ubi partitions that get mounted automatically
+# part 5 is data partition
+ubi_extra_parts="ubi.mtd=5"
+
+#note: these are fake partitions before the first real partition on 
+#on the card. They are purely for the bootloader.
+mmc_boot_parts="512k(barebox)ro,512k(bareboxenv),4M(kernel)"
+#the second real partition is our boot partition.
+rootfs_mmc_part=2

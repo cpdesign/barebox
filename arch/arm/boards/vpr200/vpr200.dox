@@ -1,0 +1,10 @@
+/** @page vpr200 VPR200
+
+The vpr200 board uses a iMX35 CPU.
+
+- 64 MiB NOR Memory
+- 2x 128 Mib RAM
+- 512 MiB NAND
+- 256 byte EEPROM
+
+*/
