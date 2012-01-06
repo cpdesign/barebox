@@ -1,0 +1,1 @@
+obj-$(CONFIG_ISL22316) += isl22316.o
