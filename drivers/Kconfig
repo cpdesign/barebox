@@ -17,5 +17,6 @@ source "drivers/eeprom/Kconfig"
 source "drivers/input/Kconfig"
 
 source "drivers/pwm/Kconfig"
+source "drivers/misc/Kconfig"
 
 endmenu

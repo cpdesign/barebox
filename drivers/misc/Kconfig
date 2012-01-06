@@ -1,0 +1,10 @@
+menuconfig MISC
+	bool "Misc devices support"
+
+if MISC
+
+config ISL22316
+	bool "isl22316 digital controlled potentiometer"
+	depends on I2C
+
+endif
