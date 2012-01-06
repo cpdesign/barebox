@@ -136,6 +136,7 @@ board-$(CONFIG_MACH_TQMA53)			:= tqma53
 board-$(CONFIG_MACH_TX51)			:= karo-tx51
 board-$(CONFIG_MACH_MX6Q_ARM2)			:= freescale-mx6-arm2
 board-$(CONFIG_MACH_TOSHIBA_AC100)		:= toshiba-ac100
+board-$(CONFIG_MACH_VPR200)			:= vpr200
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
