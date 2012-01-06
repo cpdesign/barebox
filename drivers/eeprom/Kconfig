@@ -8,4 +8,11 @@ config EEPROM_AT25
 	  after you configure the board init code to know about each eeprom
 	  on your target board.
 
+config EEPROM_AT24
+	bool "at24 based eeprom"
+	depends on I2C
+	help
+	  Provides read/write for the at24 family of I2C EEPROMS.
+	  Currently only the 2K bit versions are supported.
+	  
 endmenu
