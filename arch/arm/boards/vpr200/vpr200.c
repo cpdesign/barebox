@@ -28,6 +28,7 @@
 
 #include <common.h>
 #include <environment.h>
+#include <magicvar.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <fec.h>
@@ -232,7 +233,6 @@ static void vpr_backlight_set(int value)
 	isl22316_set_value(isl22316, setval, 0);
 }
 
-
 static void vpr_backlight_init(void)
 {
 	struct isl22316 *isl22316;
@@ -374,6 +374,55 @@ static uint32_t vpr_read_board_cfg(void)
 
 	return ret;
 }
+
+static int vpr_export_esn(void)
+{
+	unsigned char buf[2];
+	unsigned char esn_lo[3];
+	unsigned char esn_hi[3];
+	int fd;
+	int ret = -EINVAL;
+
+	fd = open("/dev/eeprom", O_RDONLY);
+	if (fd < 0) {
+		printf("Couldn't open eeprom to get ESN\n");
+		goto out;
+	}
+
+	if (lseek(fd, 4, SEEK_SET) < 0) {
+		printf("Couldn't locate ESN in eeprom\n");
+		goto out_close;
+	}
+
+	if (read(fd, buf, 2) < 0) {
+		printf("Couldn't read eeprom to get MAC\n");
+		goto out_close;
+	}
+
+	if (buf[0] == 0xff && buf[1] == 0xff) {
+		printf("VPR: Invalid ESN\n");
+	} else {
+		snprintf(esn_lo, 3, "%02x", buf[1]);
+		snprintf(esn_hi, 3, "%02x", buf[0]);
+
+		setenv("vpr_esn_lo", esn_lo);
+		export("vpr_esn_lo");
+
+		setenv("vpr_esn_hi", esn_hi);
+		export("vpr_esn_hi");
+
+		ret = 0;
+	}
+
+out_close:
+	close(fd);
+out:
+	return ret;
+}
+
+BAREBOX_MAGICVAR(vpr_esn_lo, "The low byte of the unit's ESN, as ascii hex");
+BAREBOX_MAGICVAR(vpr_esn_hi, "The high byte of the unit's ESN, as ascii hex");
+
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -607,6 +656,7 @@ static int vpr_devices_init(void)
 		break;
 	}
 
+	/* Init the i2c before the FEC, so that the MAC address can be read */
 	i2c_register_board_info(0, i2c0_devices, ARRAY_SIZE(i2c0_devices));
 	i2c_register_board_info(1, i2c1_devices, ARRAY_SIZE(i2c1_devices));
 
@@ -627,6 +677,8 @@ static int vpr_devices_init(void)
 
 	armlinux_set_revision( ((vpr_cpu_rev & 0xff) << 8) |
 				(vpr_board_rev & 0xff));
+
+	vpr_export_esn();
 
 	return 0;
 }
