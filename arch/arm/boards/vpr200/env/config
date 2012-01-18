@@ -35,6 +35,14 @@ nfsroot="/srv/nfs/vpr200/v1"
 bootargs="console=ttymxc0,115200 quiet"
 debugargs="jtag=on nohlt debug earlyprintk=ttymxc0,115200"
 
+if [ x$vpr_esn_lo != x ]; then
+ge_host_addr="g_ether.host_addr=7c:ef:18:ee:$vpr_esn_hi:$vpr_esn_lo"
+ge_dev_addr="g_ether.dev_addr=7c:ef:18:ef:$vpr_esn_hi:$vpr_esn_lo"
+ge_vendor="g_ether.iManufacturer=DeLaval"
+ge_product="g_ether.iProduct=VPR200"
+bootargs="$bootargs $ge_host_addr $ge_dev_addr $ge_vendor $ge_product"
+fi
+
 nor_parts="512k(barebox)$nor_perm,512k(bareboxenv)$nor_perm,4M(kernel)$nor_perm,-(scratch)"
 rootfs_mtdblock_nor=3
 
