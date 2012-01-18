@@ -31,7 +31,7 @@ envimage=vpr200-env
 
 autoboot_timeout=3
 
-nfsroot="/srv/nfs/vpr200v1"
+nfsroot="/srv/nfs/vpr200/v1"
 bootargs="console=ttymxc0,115200 quiet"
 debugargs="jtag=on nohlt debug earlyprintk=ttymxc0,115200"
 
