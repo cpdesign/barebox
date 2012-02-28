@@ -808,8 +808,10 @@ static int vpr_console_init(void)
 
 	/* get the GSM init done early as possible */
 	vpr_gsm_init();
+
 	/* Force the backlight off */
-	gpio_direction_output(LCD_LED_ENABLE_GPIO, 1);
+	gpio_direction_output(LCD_LED_ENABLE_GPIO, 0);
+	gpio_direction_output(LCD_PWR_GPIO, 1);
 
 	imx35_add_uart0();
 	return 0;
@@ -821,8 +823,6 @@ static int vpr_post_console_init(void)
 {
 	led_gpio_rgb_register(&vpr_diag_led);
 	led_set(led_by_name(VPR_DIAG_LED_NAME), DIAG_LED_YELLOW);
-
-	gpio_direction_output(LCD_LED_ENABLE_GPIO, 0);
 
 	return 0;
 }
