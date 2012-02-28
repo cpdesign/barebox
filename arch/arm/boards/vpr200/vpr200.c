@@ -896,6 +896,21 @@ static int vpr_core_init(void)
 	writel(0x0, IMX_MAX_BASE + 0xc00);	/* for M4 */
 	writel(0x0, IMX_MAX_BASE + 0xd00);	/* for M5 */
 
+	/*
+	 * M3IF Control Register (M3IFCTL)
+	 * MRRP[0] = L2CC0 not on priority list (0 << 0)	= 0x00000000
+	 * MRRP[1] = MAX1 not on priority list (0 << 0)		= 0x00000000
+	 * MRRP[2] = L2CC1 not on priority list (0 << 0)	= 0x00000000
+	 * MRRP[3] = USB  not on priority list (0 << 0)		= 0x00000000
+	 * MRRP[4] = SDMA not on priority list (0 << 0)		= 0x00000000
+	 * MRRP[5] = GPU not on priority list (0 << 0)		= 0x00000000
+	 * MRRP[6] = IPU1 on priority list (1 << 6)		= 0x00000040
+	 * MRRP[7] = IPU2 not on priority list (0 << 0)		= 0x00000000
+	 *                                                       ------------
+	 *                                                        0x00000040
+	 */
+	writel(0x40, IMX_M3IF_BASE);
+
 	return 0;
 }
 core_initcall(vpr_core_init);
