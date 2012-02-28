@@ -913,17 +913,19 @@ static int vpr_pmic_init_v1(struct mc13892 *mc13892)
 	val = 0;
 	/* VCHRG[2:0] = 0b011, Charge reg output voltage 4.200 */
 	val |= 0x3;
-	mask |= 0x7;
 	/* ICHRG[3:0] = 0b1101, 1200mA charger current */
 	val |= 0xd << 3;
-	mask |= 0xf << 3;
 	/* PLIM[1:1] = 0b11, Power limit 1100mW */
 	val |= 3 << 15;
-	mask |= 0x3 << 15;
+	/* TREN */
+	val |= 1 << 7;
+	/* CYCLB = 0 */
+	val &= ~(1<<22);
+	/* THCHKB = 1, disable thermistor check*/
+	val |= (1 << 9);
 	/* Enable setting of V I */
 	val |= 1 << 23;
-	mask |= 0x1 << 23;
-	err |= mc13892_set_bits(mc13892, MC13892_REG_CHARGE, mask, val);
+	err |= mc13892_reg_write(mc13892, MC13892_REG_CHARGE, val);
 
 	/* global reset enable */
 	mc13892_set_bits(mc13892, MC13892_REG_POWER_CTL0, 0x1 << 7, 0x0);
