@@ -29,7 +29,7 @@ kernel=uImage
 rootfs=vpr200v1-rootfs
 envimage=vpr200-env
 
-autoboot_timeout=3
+autoboot_timeout=6
 
 nfsroot="/srv/nfs/vpr200/v1"
 bootargs="console=ttymxc0,115200 quiet"
