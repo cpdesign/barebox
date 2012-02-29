@@ -381,6 +381,7 @@ static int vpr_export_esn(void)
 		export("vpr_esn_hi");
 
 		ret = 0;
+		armlinux_set_serial((buf[0] & 0xff) << 8 | (buf[1] & 0xff));
 	}
 
 out_close:
