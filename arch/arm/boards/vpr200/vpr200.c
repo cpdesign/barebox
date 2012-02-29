@@ -261,37 +261,6 @@ static void vpr_display_enable(int enable)
 		vpr_backlight_set(50);
 }
 
-#define VPR200_ALT_LCD
-#if !(defined VPR200_ALT_LCD)
-/*
- * Same as imx35 pdk
- */
-static struct fb_videomode CTP_CLAA070LC0ACW = {
-	/* 800x480 @ 60 Hz */
-	.name		= "CTP-CLAA070LC0ACW",
-	.refresh	= 60,
-	.xres		= 800,
-	.yres		= 480,
-	.pixclock	= KHZ2PICOS(27000),
-	.left_margin	= 50,
-	.right_margin	= 50,	/* whole line should have 900 clocks */
-	.upper_margin	= 10,
-	.lower_margin	= 10,	/* whole frame should have 500 lines */
-	.hsync_len	= 1,	/* note: DE only display */
-	.vsync_len	= 1,	/* note: DE only display */
-	.sync		= FB_SYNC_CLK_IDLE_EN | FB_SYNC_OE_ACT_HIGH,
-	.vmode		= FB_VMODE_NONINTERLACED,
-	.flag		= 0,
-};
-
-static struct imx_ipu_fb_platform_data ipu_fb_data = {
-	.mode		= &CTP_CLAA070LC0ACW,
-	.bpp		= 16,
-	.enable		= vpr_display_enable,
-};
-
-#else
-
 static struct fb_videomode PT0708048 = {
 	/* 800x480 @ 60 Hz */
 	.name		= "PT0708048",
@@ -312,10 +281,10 @@ static struct fb_videomode PT0708048 = {
 
 static struct imx_ipu_fb_platform_data ipu_fb_data = {
 	.mode		= &PT0708048,
+	.num_modes	= 1,
 	.bpp		= 16,
 	.enable		= vpr_display_enable,
 };
-#endif
 
 /* ------------------------------------------------------------------------- */
 static void vpr_cpu_cfg_init(void)
