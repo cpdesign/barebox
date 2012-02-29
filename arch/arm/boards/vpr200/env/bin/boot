@@ -1,44 +1,39 @@
 #!/bin/sh
-#
-#
+# 
+# vpr200 boot -extends standard boot with buzzer feedback and button
+# state checking so that user can force booting off SD card without
+# having to change boot src pins.
+# 
 
 # Check for button combo for SD forced boot
 button -m 0x18
 
 if [ x$? = x0 ]; then
 	echo "Forcing boot from SD card"
+	# force barebox_loc to mmc before including /env/config 
+	# so that nor is rw and the xxx_loc are set up
 	barebox_loc=mmc
+
 	#led to yellow
 	led diag 6
 
-	buzzer -f 1760 -d 150 && buzzer -f 10 -d 150 && buzzer -f 2000 -d 300
-
 	#
 	. /env/config
+	
+	buzzer -f 1760 -d 150 && buzzer -f 10 -d 150 && buzzer -f 2000 -d 300
+
 else
 	#
 	. /env/config
 
-	if [ x$1 = xnand ]; then
-		rootfs_loc=nand
-		kernel_loc=nand
-	elif [ x$1 = xnor ]; then
-		rootfs_loc=nand
-		kernel_loc=nor
-	elif [ x$1 = xnet ]; then
-		rootfs_loc=net
-		kernel_loc=net
-	elif [ x$1 = xmmc ]; then
-		rootfs_loc=mmc
-		kernel_loc=mmc
-	fi
-
-	buzzer -f 440 -d 50 && buzzer -f 1760 -d 50
+	buzzer -f 440 -d 25 && buzzer -f 1760 -d 25
 fi
 
 if [ x$ip = xdhcp ]; then
 	bootargs="$bootargs ip=dhcp"
-elif [ x$ip != xno ]; then
+elif [ x$ip = xnone ]; then
+	bootargs="$bootargs ip=none"
+else
 	bootargs="$bootargs ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask::eth0:"
 fi
 
@@ -83,17 +78,25 @@ fi
 
 if [ x$kernel_loc = xnet ]; then
 	# Need some kind of address set, so dhcp unless addr is static
-	# (even if $ip is "no")
+	# (even if $ip is "none")
 	if [ x$ip != x ]; then
 		dhcp
 	fi
-	tftp $kernel uImage || exit 1
-	bootm uImage
+	kdev=/image
+	tftp $kernelimage $kdev || exit 1
 elif [ x$kernel_loc = xnor ]; then
-	bootm /dev/nor0.kernel
+	kdev="/dev/nor0.kernel"
 elif [ x$kernel_loc = xmmc ]; then
-	bootm /dev/disk0.kernel
+	kdev="/dev/disk0.kernel"
 else
-	bootm /dev/nand0.kernel.bb
+	kdev="/dev/nand0.kernel.bb"
 fi
 
+bootm $bootm_opt $kdev
+
+# if bootm failed, give an triple error buzz
+if [ x$? != x0 ];then
+	buzzer -f 220 -d 150 && buzzer -f 20 -d 50 
+	buzzer -f 220 -d 150 && buzzer -f 20 -d 50 
+	buzzer -f 220 -d 150 && buzzer -f 20 -d 50 
+fi
