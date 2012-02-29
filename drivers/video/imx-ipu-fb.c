@@ -812,6 +812,16 @@ static void ipu_fb_disable(struct fb_info *info)
 	reg = reg_read(fbi, SDC_COM_CONF);
 	reg &= ~SDC_COM_BG_EN;
 	reg_write(fbi, reg, SDC_COM_CONF);
+	
+	/* Disable IPU sub modules */
+	reg = reg_read(fbi, IPU_CONF);
+	reg &= ~(IPU_CONF_SDC_EN | IPU_CONF_DI_EN);
+	reg_write(fbi, reg, IPU_CONF);
+
+	/* Stop the clock */
+	reg = readl(IMX_CCM_BASE + CCM_CGR1);
+	reg &= ~(3 << 18);
+	writel(reg, IMX_CCM_BASE + CCM_CGR1);
 }
 
 static int ipu_fb_activate_var(struct fb_info *info)
