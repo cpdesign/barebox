@@ -55,7 +55,7 @@ fi
 nor_parts="512k(barebox)$nor_perm,512k(bareboxenv)$nor_perm,4M(kernel)$nor_perm,-(scratch)"
 rootfs_mtdblock_nor=3
 
-nand_parts="120M(rootfs),-(data)"
+nand_parts="200M(rootfs),-(data)"
 rootfs_mtdblock_nand=4
 
 # extra ubi partitions that get mounted automatically
