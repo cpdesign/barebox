@@ -1,8 +1,9 @@
 #!/bin/sh
+machine=vpr200
 
 # use 'dhcp' to do dhcp in barebox and in kernel
-# use 'no' if you don't want to pass the ip from barebox to the kernel
-ip=no
+# use 'none' if you don't want to pass the ip from barebox to the kernel
+ip=none
 
 # or set your networking parameters here
 #eth0.ipaddr=10.1.40.90
@@ -17,6 +18,10 @@ rootfs_loc=nand
 # 'ubifs' for flash, 'ext3' for mmc
 rootfs_type=ubifs
 
+#
+# only when booting from mmc do we allow the barebox or kernel partitions to
+# be writeable.
+#
 if [ x$barebox_loc = xmmc ]; then
 	kernel_loc=mmc
 	rootfs_loc=mmc
@@ -25,7 +30,8 @@ else
 	nor_perm=ro
 fi
 
-kernel=uImage
+kernelimage=uImage
+
 rootfs=vpr200v1-rootfs
 envimage=vpr200-env
 
@@ -59,5 +65,6 @@ ubi_extra_parts="ubi.mtd=5"
 #note: these are fake partitions before the first real partition on 
 #on the card. They are purely for the bootloader.
 mmc_boot_parts="512k(barebox)ro,512k(bareboxenv),4M(kernel)"
-#the second real partition is our boot partition.
+# the second real partition is our boot partition.
+# (the first is a FAT filesystem that can hold system update files)
 rootfs_mmc_part=2
