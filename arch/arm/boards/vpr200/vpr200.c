@@ -274,7 +274,7 @@ static struct fb_videomode PT0708048 = {
 	.lower_margin	= 10,
 	.hsync_len	= 1,	/* note: DE only display */
 	.vsync_len	= 1,	/* note: DE only display */
-	.sync		= FB_SYNC_CLK_IDLE_EN | FB_SYNC_OE_ACT_HIGH,
+	.sync		= FB_SYNC_OE_ACT_HIGH,
 	.vmode		= FB_VMODE_NONINTERLACED,
 	.flag		= 0,
 };
