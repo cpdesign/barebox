@@ -31,26 +31,18 @@ else
 fi
 
 kernelimage=uImage
-
 rootfs=vpr200v1-rootfs
-envimage=vpr200-env
+envimage=vpr200v1-env
 
 autoboot_timeout=6
 
 nfsroot="/srv/nfs/vpr200/v1"
-bootargs="console=ttymxc0,115200 quiet"
+consoleargs="console=ttymxc0,115200"
 debugargs="jtag=on nohlt debug earlyprintk=ttymxc0,115200"
+bootargs="lpj=2658304 quiet"
 
-if [ x$vpr_esn_lo != x ]; then
- ge_vid="g_ether.idVendor=0x253e"
- ge_pid="g_ether.idProduct=0xa4a2"
- ge_host_addr="g_ether.host_addr=7c:ef:18:ee:$vpr_esn_hi:$vpr_esn_lo"
- ge_dev_addr="g_ether.dev_addr=7c:ef:18:ef:$vpr_esn_hi:$vpr_esn_lo"
- ge_vendor="g_ether.iManufacturer=DeLaval"
- ge_serial="g_ether.iSerialNumber=$vpr_esn_hi$vpr_esn_lo"
- ge_product="g_ether.iProduct=VPR200"
- bootargs="$bootargs $ge_vid $ge_pid $ge_serial $ge_host_addr $ge_dev_addr $ge_vendor $ge_product"
-fi
+# include g_ether parameters
+. /env/geconf
 
 nor_parts="512k(barebox)$nor_perm,512k(bareboxenv)$nor_perm,4M(kernel)$nor_perm,-(scratch)"
 rootfs_mtdblock_nor=3
@@ -68,3 +60,6 @@ mmc_boot_parts="512k(barebox)ro,512k(bareboxenv),4M(kernel)"
 # the second real partition is our boot partition.
 # (the first is a FAT filesystem that can hold system update files)
 rootfs_mmc_part=2
+
+# example for dev debug query
+#battdebug='ddebug_query="file mc13xxx_batttery.c +p"'

@@ -62,18 +62,11 @@ fi
 
 bootargs="$bootargs mtdparts=physmap-flash.0:$nor_parts;mxc_nand:$nand_parts $ubi_extra_parts"
 
-#
-# turn off the LCD before booting. We can't keep the image up
-# because the IPU requires DMA transfer and the kernel requires that all DMA
-# be stopped before boot
-#
-fb0.enable=0
-vprbacklight -s 0
 
 # Check for button combo to boot debug mode
 button -m 0x0d
 if [ x$? = x0 ]; then
-	bootargs="$bootargs $debugargs"
+	bootargs="$bootargs $consoleargs $debugargs"
 fi
 
 if [ x$kernel_loc = xnet ]; then

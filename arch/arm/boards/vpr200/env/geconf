@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ x$vpr_esn_lo != x ]; then
+ ge_vid="g_ether.idVendor=0x253e"
+ ge_pid="g_ether.idProduct=0xa4a2"
+ ge_host_addr="g_ether.host_addr=7c:ef:18:ee:$vpr_esn_hi:$vpr_esn_lo"
+ ge_dev_addr="g_ether.dev_addr=7c:ef:18:ef:$vpr_esn_hi:$vpr_esn_lo"
+ ge_vendor="g_ether.iManufacturer=DeLaval"
+ ge_serial="g_ether.iSerialNumber=$vpr_esn_hi$vpr_esn_lo"
+ ge_product="g_ether.iProduct=VPR200"
+ bootargs="$bootargs $ge_vid $ge_pid $ge_serial $ge_host_addr $ge_dev_addr $ge_vendor $ge_product"
+fi
