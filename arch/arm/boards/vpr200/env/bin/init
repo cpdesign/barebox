@@ -27,17 +27,6 @@ if [ -z $eth0.ethaddr ]; then
 	echo "WARN: no MAC address set for eth0."
 fi
 
-#
-if [ -f /env/logo.bmp.lzo ]; then
-	unlzo /env/logo.bmp.lzo /logo.bmp
-	bmp /logo.bmp
-elif [ -f /env/logo.bmp ]; then
-	bmp /env/logo.bmp
-	fb0.enable=1
-fi
-
-#
-vprbacklight -s 40
 
 # unless button combo pressed, jump straight into booting
 button -m 0x03
