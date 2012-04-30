@@ -900,8 +900,9 @@ static int vpr_pmic_init_v1(struct mc13892 *mc13892)
 	val |= 0x3;
 	/* ICHRG[3:0] = 0b1101, 1200mA charger current */
 	val |= 0xd << 3;
-	/* PLIM[1:1] = 0b11, Power limit 1100mW */
+	/* Disable power limiting,  PLIM[1:1] = 0b11, Power limit 1100mW */
 	val |= 3 << 15;
+	val |= 1 << 17;
 	/* TREN */
 	val |= 1 << 7;
 	/* CYCLB = 0 */
