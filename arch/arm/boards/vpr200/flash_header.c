@@ -46,9 +46,19 @@ struct imx_flash_header __flash_header_0x1000 nor_flash_header = {
 
 unsigned long __image_len_0x1000 nor_barebox_len = 0x40000;
 
+/*
+ * This define can be set to 0 to skip initialization of the first mem
+ * bank.
+ * This is useful for testing boards which don't boot with suspect RAM,
+ * (Use this in conjunction with setting TEXT_BASE to 0x97f00000)
+ */
+#define USE_MEM_BANK_1 1
+
 struct imx_dcd_entry __dcd_entry_0x0400 sd_dcd_entry[] = {
 	{ .ptr_type = 4, .addr = 0xB8001010, .val = 0x00000304, },
 	{ .ptr_type = 4, .addr = 0xB8001010, .val = 0x0000030C, },
+	/* bank1 */
+#if USE_MEM_BANK_1
 	{ .ptr_type = 4, .addr = 0xB8001004, .val = 0x007ffc3f, },
 	{ .ptr_type = 4, .addr = 0xB8001000, .val = 0x92220000, },
 	{ .ptr_type = 4, .addr = 0x80000400, .val = 0x12345678, },
@@ -61,9 +71,22 @@ struct imx_dcd_entry __dcd_entry_0x0400 sd_dcd_entry[] = {
 	{ .ptr_type = 1, .addr = 0x82000400, .val = 0xda, },
 	{ .ptr_type = 4, .addr = 0xB8001000, .val = 0x82226080, },
 	{ .ptr_type = 4, .addr = 0xB8001004, .val = 0x007ffc3f, },
+#else
+	{ .ptr_type = 4, .addr = 0xB8001000, .val = 0x00002000, },
+#endif
+	/* bank2 */
 	{ .ptr_type = 4, .addr = 0xB800100C, .val = 0x007ffc3f, },
+	{ .ptr_type = 4, .addr = 0xB8001008, .val = 0x92220000, },
+	{ .ptr_type = 4, .addr = 0x90000400, .val = 0x12345678, },
+	{ .ptr_type = 4, .addr = 0xB8001008, .val = 0xA2220000, },
+	{ .ptr_type = 4, .addr = 0x90000000, .val = 0x87654321, },
+	{ .ptr_type = 4, .addr = 0x90000000, .val = 0x87654321, },
+	{ .ptr_type = 4, .addr = 0xB8001008, .val = 0xB2220000, },
+	{ .ptr_type = 1, .addr = 0x90000233, .val = 0xda, },
+	{ .ptr_type = 1, .addr = 0x92000780, .val = 0xda, },
+	{ .ptr_type = 1, .addr = 0x92000400, .val = 0xda, },
+	{ .ptr_type = 4, .addr = 0xB8001008, .val = 0x82226080, },
 	{ .ptr_type = 4, .addr = 0xB8001010, .val = 0x00000304, },
-	{ .ptr_type = 4, .addr = 0xB8001008, .val = 0x00002000, },
 };
 
 struct imx_flash_header __flash_header_0x0400 sd_flash_header = {

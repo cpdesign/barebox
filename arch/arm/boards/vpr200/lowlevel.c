@@ -130,7 +130,6 @@ void __bare_init __naked board_init_lowlevel(void)
 	/* Skip SDRAM initialization of bank 1 if we run from there */
 	r = get_pc();
 	if ( !(r > 0x80000000 && r < 0x90000000)) {
-
 		/**
 		* RAM init
 		*/
@@ -185,52 +184,57 @@ void __bare_init __naked board_init_lowlevel(void)
 	}
 
 	/* BANK 2 */
+	r = get_pc();
+	if ( !(r > 0x90000000 && r < 0xa0000000)) {
+		/* VPR200v1 has DDR2, DDR2_EN 0x200, DDR_EN 0x100, MDDR_EN 0x004 */
+		writel(0x00000304, ESDMISC); /*  */
 
-	/* set timing paramters (basically max delays for all)*/
-	writel(0x007ffc2f, ESDCFG1);
-	/* select Precharge-All mode */
-	writel(0x92220000, ESDCTL1);
-	/* Precharge-All */
-	writel(0x12345678, IMX_SDRAM_CS1 + 0x400);
+		/* set timing paramters (basically max delays for all)*/
+		writel(0x007ffc2f, ESDCFG1);
+		/* select Precharge-All mode */
+		writel(0x92220000, ESDCTL1);
+		/* Precharge-All */
+		writel(0x12345678, IMX_SDRAM_CS1 + 0x400);
 
-	/* select Load-Mode-Register mode */
-	writel(0xB8001000, ESDCTL1);
-	/* Load reg EMR2 */
-	writeb(0xda, 0x94000000);
-	/* Load reg EMR3 */
-	writeb(0xda, 0x96000000);
-	/* Load reg EMR1 -- enable DLL */
-	writeb(0xda, 0x92000400);
-	/* Load reg MR -- reset DLL */
-	writeb(0xda, 0x90000333);
+		/* select Load-Mode-Register mode */
+		writel(0xB8001000, ESDCTL1);
+		/* Load reg EMR2 */
+		writeb(0xda, 0x94000000);
+		/* Load reg EMR3 */
+		writeb(0xda, 0x96000000);
+		/* Load reg EMR1 -- enable DLL */
+		writeb(0xda, 0x92000400);
+		/* Load reg MR -- reset DLL */
+		writeb(0xda, 0x90000333);
 
-	/* select Precharge-All mode */
-	writel(0x92220000, ESDCTL1);
-	/* Precharge-All */
-	writel(0x12345678, IMX_SDRAM_CS1 + 0x400);
+		/* select Precharge-All mode */
+		writel(0x92220000, ESDCTL1);
+		/* Precharge-All */
+		writel(0x12345678, IMX_SDRAM_CS1 + 0x400);
 
-	/* select Manual-Refresh mode */
-	writel(0xA2220000, ESDCTL1);
-	/* Manual-Refresh 2 times */
-	writel(0x87654321, IMX_SDRAM_CS1);
-	writel(0x87654321, IMX_SDRAM_CS1);
+		/* select Manual-Refresh mode */
+		writel(0xA2220000, ESDCTL1);
+		/* Manual-Refresh 2 times */
+		writel(0x87654321, IMX_SDRAM_CS1);
+		writel(0x87654321, IMX_SDRAM_CS1);
 
-	/* select Load-Mode-Register mode */
-	writel(0xB2220000, ESDCTL1);
-	/* Load reg MR -- CL3, BL8, end DLL reset */
-	writeb(0xda, 0x90000233);
-	/* Load reg EMR1 -- OCD default */
-	writeb(0xda, 0x92000780);
-	/* Load reg EMR1 -- OCD exit */
-	writeb(0xda, 0x92000400);
+		/* select Load-Mode-Register mode */
+		writel(0xB2220000, ESDCTL1);
+		/* Load reg MR -- CL3, BL8, end DLL reset */
+		writeb(0xda, 0x90000233);
+		/* Load reg EMR1 -- OCD default */
+		writeb(0xda, 0x92000780);
+		/* Load reg EMR1 -- OCD exit */
+		writeb(0xda, 0x92000400);
 
-	/* select normal-operation mode
-	 * DSIZ32-bit, BL8, COL10-bit, ROW13-bit
-	 * disable PWT & PRCT
-	 * disable Auto-Refresh */
-	writel(0x82220080, ESDCTL1);
-	/* enable Auto-Refresh */
-	writel(0x82228080, ESDCTL1);
+		/* select normal-operation mode
+		 * DSIZ32-bit, BL8, COL10-bit, ROW13-bit
+		 * disable PWT & PRCT
+		 * disable Auto-Refresh */
+		writel(0x82220080, ESDCTL1);
+		/* enable Auto-Refresh */
+		writel(0x82228080, ESDCTL1);
+	}
 
 #ifdef CONFIG_NAND_IMX_BOOT
 	/* skip NAND boot if not running from NFC space */
