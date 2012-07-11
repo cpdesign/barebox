@@ -42,7 +42,7 @@
 #include <linux/stat.h>
 
 #include <asm/armlinux.h>
-#include <asm/io.h>
+#include <io.h>
 #include <asm/mmu.h>
 #include <generated/mach-types.h>
 
@@ -51,13 +51,12 @@
 #include <mach/imx-regs.h>
 #include <mach/iomux-mx35.h>
 #include <mach/iomux-v3.h>
-#include <mach/pmic.h>
 #include <mach/imx-ipu-fb.h>
 #include <mach/generic.h>
 #include <mach/devices-imx35.h>
 
 #include <i2c/i2c.h>
-#include <mfd/mc13892.h>
+#include <mfd/mc13xxx.h>
 #include <led.h>
 #include <misc/isl22316.h>
 
@@ -192,7 +191,7 @@ struct imx_nand_platform_data nand_info = {
 
 static struct i2c_board_info i2c0_devices[] = {
 	{
-		I2C_BOARD_INFO("mc13892-i2c", 0x08),
+		I2C_BOARD_INFO("mc13xxx-i2c", 0x08),
 	}, {
 		I2C_BOARD_INFO("eeprom", 0x50),
 	},
@@ -289,7 +288,7 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 /* ------------------------------------------------------------------------- */
 static void vpr_cpu_cfg_init(void)
 {
-	struct pad_desc cpu_cfg_pads[] = {
+	iomux_v3_cfg_t cpu_cfg_pads[] = {
 		/* CPU Sys config */
 		MX35_PAD_ATA_DATA14__GPIO2_27,
 		MX35_PAD_ATA_DATA15__GPIO2_28,
@@ -304,7 +303,7 @@ static void vpr_cpu_cfg_init(void)
 
 static void vpr_board_cfg_init(void)
 {
-	struct pad_desc board_cfg_pads[] = {
+	iomux_v3_cfg_t board_cfg_pads[] = {
 		MX35_PAD_ATA_CS1__GPIO2_7,
 		MX35_PAD_ATA_DIOR__GPIO2_8,
 		MX35_PAD_ATA_DIOW__GPIO2_9,
@@ -488,7 +487,7 @@ static void vpr_gsm_set(int on)
 /* ------------------------------------------------------------------------- */
 static void vpr_bp_init(void)
 {
-	struct pad_desc bp_pads[] = {
+	iomux_v3_cfg_t bp_pads[] = {
 		MX35_PAD_ATA_DATA4__GPIO2_17,
 		MX35_PAD_ATA_DATA5__GPIO2_18,
 	};
@@ -501,7 +500,7 @@ static void vpr_bp_init(void)
 
 static void vpr_rfprog_init(void)
 {
-	struct pad_desc rfprog_pads[] = {
+	iomux_v3_cfg_t rfprog_pads[] = {
 		MX35_PAD_ATA_IORDY__GPIO2_12,
 		MX35_PAD_ATA_DATA0__GPIO2_13,
 		MX35_PAD_ATA_DATA1__GPIO2_14,
@@ -583,24 +582,24 @@ static int vpr_devices_init(void)
 	case 0x03:		/* SD/MMC is the source */
 		led_set(diagled, DIAG_LED_MAGENTA);
 		snprintf(bootsrc_msg, MAX_BOOTSRC_MSG, "SD boot: ");
-		devfs_add_partition("disk0", 0x00000, 0x80000, PARTITION_FIXED, "self0");
-		devfs_add_partition("disk0", 0x80000, 0x80000, PARTITION_FIXED, "env0");
+		devfs_add_partition("disk0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "self0");
+		devfs_add_partition("disk0", 0x80000, 0x80000, DEVFS_PARTITION_FIXED, "env0");
 		protect_file("/dev/self0", 1);
 		protect_file("/dev/env0", 1);
 		break;
 
 	case 0x01:		/* NAND is the source */
-		devfs_add_partition("nand0", 0x00000, 0x40000, PARTITION_FIXED, "self_raw");
+		devfs_add_partition("nand0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self_raw");
 		dev_add_bb_dev("self_raw", "self0");
-		devfs_add_partition("nand0", 0x40000, 0x80000, PARTITION_FIXED, "env_raw");
+		devfs_add_partition("nand0", 0x40000, 0x80000, DEVFS_PARTITION_FIXED, "env_raw");
 		dev_add_bb_dev("env_raw", "env0");
 		break;
 
 	case 0x00:		/* NOR is the source */
 		led_set(diagled, DIAG_LED_AQUA);
 		snprintf(bootsrc_msg, MAX_BOOTSRC_MSG, "NOR boot: ");
-		devfs_add_partition("nor0", 0x00000, 0x80000, PARTITION_FIXED, "self0");
-		devfs_add_partition("nor0", 0x80000, 0x80000, PARTITION_FIXED, "env0");
+		devfs_add_partition("nor0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "self0");
+		devfs_add_partition("nor0", 0x80000, 0x80000, DEVFS_PARTITION_FIXED, "env0");
 		protect_file("/dev/self0", 1);
 		protect_file("/dev/env0", 1);
 		break;
@@ -655,7 +654,7 @@ static int vpr_devices_init(void)
 
 device_initcall(vpr_devices_init);
 
-static struct pad_desc vpr_pads[] = {
+static iomux_v3_cfg_t vpr_pads[] = {
 	/* PMIC int */
 	MX35_PAD_GPIO2_0__GPIO2_0,
 	/* VSD_EN */
@@ -886,14 +885,14 @@ static int vpr_core_init(void)
 core_initcall(vpr_core_init);
 
 /* -------------------------------------------------------------------------*/
-static int vpr_pmic_init_v1(struct mc13892 *mc13892)
+static int vpr_pmic_init_v1(struct mc13xxx *mc13xxx)
 {
 	int err = 0;
 	unsigned int mask = 0;
 	unsigned int val = 0;
 
 	/* VGEN2[2:0] = b111 --> output to 3.15V */
-	mc13892_set_bits(mc13892, MC13892_REG_SETTING_0, 0x7 << 6, 0x7 << 6);
+	mc13xxx_set_bits(mc13xxx, MC13892_REG_SETTING_0, 0x7 << 6, 0x7 << 6);
 
 	val = 0;
 	/* VCHRG[2:0] = 0b011, Charge reg output voltage 4.200 */
@@ -911,10 +910,10 @@ static int vpr_pmic_init_v1(struct mc13892 *mc13892)
 	val |= (1 << 9);
 	/* Enable setting of V I */
 	val |= 1 << 23;
-	err |= mc13892_reg_write(mc13892, MC13892_REG_CHARGE, val);
+	err |= mc13xxx_reg_write(mc13xxx, MC13892_REG_CHARGE, val);
 
 	/* global reset enable */
-	mc13892_set_bits(mc13892, MC13892_REG_POWER_CTL0, 0x1 << 7, 0x0);
+	mc13xxx_set_bits(mc13xxx, MC13892_REG_POWER_CTL0, 0x1 << 7, 0x0);
 
 	/* pwron1 reset enable */
 	val = 0;
@@ -923,12 +922,12 @@ static int vpr_pmic_init_v1(struct mc13892 *mc13892)
 	mask |= (0x1 << 3) | (0x1 << 2) | (0x1 << 1);
 	val |= (0x3 << 4); /* debounce pwron1 to 750 ms */
 	mask |= (0x3 < 4);
-	mc13892_set_bits(mc13892, MC13892_REG_POWER_CTL2, mask, val);
+	mc13xxx_set_bits(mc13xxx, MC13892_REG_POWER_CTL2, mask, val);
 
 	return err;
 }
 
-static int vpr_fec_init_v2(struct mc13892 *mc13892)
+static int vpr_fec_init_v2(struct mc13xxx *mc13xxx)
 {
 	int err = 0;
 
@@ -936,11 +935,11 @@ static int vpr_fec_init_v2(struct mc13892 *mc13892)
 
 	/*turn on the FEC power supply */
 	/* VGEN1[1:0] = 0b11*/
-	err |= mc13892_set_bits(mc13892, MC13892_REG_SETTING_0, 0x03, 0x03);
+	err |= mc13xxx_set_bits(mc13xxx, MC13892_REG_SETTING_0, 0x03, 0x03);
 	/* VGEN1EN = 1, VGEN1STBY = 0, VGEN1MODE = 0 */
-	err |= mc13892_set_bits(mc13892, MC13892_REG_MODE_0, 0x07, 0x01);
+	err |= mc13xxx_set_bits(mc13xxx, MC13892_REG_MODE_0, 0x07, 0x01);
 	if (err) {
-		dev_err(&mc13892->client->dev, "Init sequence failed!\n");
+		dev_err(&mc13xxx->client->dev, "Init sequence failed!\n");
 	}
 
 	mdelay(25);
@@ -960,11 +959,11 @@ static void vpr_regs_init(void)
 
 static int vpr_final_init(void)
 {
-	struct mc13892 *mc13892;
+	struct mc13xxx *mc13xxx;
 
-	mc13892 = mc13892_get();
-	if (!mc13892) {
-		printf("FAILED to get mc13892 handle!\n");
+	mc13xxx = mc13xxx_get();
+	if (!mc13xxx) {
+		printf("FAILED to get mc13xxx handle!\n");
 		return 0;
 	}
 
@@ -977,8 +976,8 @@ static int vpr_final_init(void)
 		 * init the pmic first so the charge current is increased
 		 * before any ancilliaries are powered up.
 		 */
-		vpr_pmic_init_v1(mc13892);
-		vpr_fec_init_v2(mc13892);
+		vpr_pmic_init_v1(mc13xxx);
+		vpr_fec_init_v2(mc13xxx);
 		vpr_regs_init();
 		vpr_backlight_init();
 		break;
@@ -1005,7 +1004,7 @@ void __bare_init nand_boot(void)
 
 /* ------------------------------------------------------------------------ */
 
-static int do_button(struct command *cmdtp, int argc, char *argv[])
+static int do_button(int argc, char *argv[])
 {
 	int opt;
 	uint64_t start;
@@ -1072,7 +1071,7 @@ BAREBOX_CMD_END
 
 /* ------------------------------------------------------------------------ */
 
-static int do_buzzer(struct command *cmdtp, int argc, char *argv[])
+static int do_buzzer(int argc, char *argv[])
 {
 	int opt;
 	uint64_t start;
@@ -1124,7 +1123,7 @@ BAREBOX_CMD_START(buzzer)
 	BAREBOX_CMD_HELP(cmd_buzzer_help)
 BAREBOX_CMD_END
 
-static int do_gsmpwr(struct command *cmdtp, int argc, char *argv[])
+static int do_gsmpwr(int argc, char *argv[])
 {
 	int opt;
 	ulong set = 0;
@@ -1158,15 +1157,15 @@ static void dump_binary(unsigned int val)
 	}
 }
 
-static int do_mc13892_dump(struct command *cmdtp, int argc, char* argv[])
+static int do_mc13xxx_dump(int argc, char* argv[])
 {
 	int regnum;
 	unsigned int val;
 
-	struct mc13892 *mc13892 = mc13892_get();
+	struct mc13xxx *mc13xxx = mc13xxx_get();
 
 	for(regnum = 0; regnum < 55; ++regnum) {
-		mc13892_reg_read(mc13892, regnum, &val);
+		mc13xxx_reg_read(mc13xxx, regnum, &val);
 		printf("%d\t %02x %02x %02x \t", regnum,
 				(val >> 16) & 0xff,
 				(val >> 8) & 0xff,
@@ -1178,12 +1177,12 @@ static int do_mc13892_dump(struct command *cmdtp, int argc, char* argv[])
 	return 0;
 }
 
-BAREBOX_CMD_START(mc13892_dump)
-	.cmd	= do_mc13892_dump,
-	.usage  = "Dump mc13892 registers",
+BAREBOX_CMD_START(mc13xxx_dump)
+	.cmd	= do_mc13xxx_dump,
+	.usage  = "Dump mc13xxx registers",
 BAREBOX_CMD_END
 
-static int do_vprregs(struct command *cmdtp, int argc, char* argv[])
+static int do_vprregs(int argc, char* argv[])
 {
 	int enable_3v3 = -1;
 	int enable_5v = -1;
@@ -1217,7 +1216,7 @@ BAREBOX_CMD_START(vprreg)
 	.usage  = "Enable regulators",
 BAREBOX_CMD_END
 
-static int do_isl22316(struct command *cmdtp, int argc, char *argv[])
+static int do_isl22316(int argc, char *argv[])
 {
 	int opt;
 	int value = -1;
@@ -1270,7 +1269,7 @@ BAREBOX_CMD_START(isl22316)
 	.usage  = "Set isl22316 device value",
 BAREBOX_CMD_END
 
-static int do_vprbacklight(struct command *cmdtp, int argc, char* argv[])
+static int do_vprbacklight(int argc, char* argv[])
 {
 	int setval = -1;
 	int opt;
