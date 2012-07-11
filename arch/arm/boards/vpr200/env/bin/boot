@@ -37,6 +37,10 @@ else
 	bootargs="$bootargs ip=$eth0.ipaddr:$eth0.serverip:$eth0.gateway:$eth0.netmask::eth0:"
 fi
 
+#
+bootargs="$bootargs mtdparts=physmap-flash.0:$nor_parts;mxc_nand:$nand_parts "
+# always specify ubi devices
+bootargs="$bootargs $ubi_data_part $ubi_rootfs_part"
 
 if [ x$rootfs_loc != xnet ]; then
 	if [ x$rootfs_loc = xnand ]; then
@@ -48,7 +52,7 @@ if [ x$rootfs_loc != xnet ]; then
 	fi
 
 	if [ x$rootfs_type = xubifs ]; then
-		bootargs="$bootargs ubi.mtd=$rootfs_mtdblock root=ubi0:$rootfs"
+		bootargs="$bootargs root=ubi1:$rootfs"
 	elif [ x$rootfs_loc = xmmc ]; then
 		bootargs="$bootargs rootwait root=/dev/mmcblk0p$rootfs_mmc_part"
 	else
@@ -59,8 +63,6 @@ if [ x$rootfs_loc != xnet ]; then
 else
 	bootargs="$bootargs root=/dev/nfs nfsroot=$eth0.serverip:$nfsroot,v3,tcp noinitrd"
 fi
-
-bootargs="$bootargs mtdparts=physmap-flash.0:$nor_parts;mxc_nand:$nand_parts $ubi_extra_parts"
 
 
 # Check for button combo to boot debug mode

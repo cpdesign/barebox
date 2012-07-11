@@ -48,11 +48,11 @@ nor_parts="512k(barebox)$nor_perm,512k(bareboxenv)$nor_perm,4M(kernel)$nor_perm,
 rootfs_mtdblock_nor=3
 
 nand_parts="200M(rootfs),-(data)"
-rootfs_mtdblock_nand=4
+ubi_rootfs_part="ubi.mtd=4"
 
 # extra ubi partitions that get mounted automatically
 # part 5 is data partition
-ubi_extra_parts="ubi.mtd=5"
+ubi_data_part="ubi.mtd=5"
 
 #note: these are fake partitions before the first real partition on 
 #on the card. They are purely for the bootloader.
