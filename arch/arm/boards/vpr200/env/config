@@ -1,5 +1,5 @@
 #!/bin/sh
-machine=vpr200
+machine=vpr200v2
 
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you don't want to pass the ip from barebox to the kernel
@@ -31,12 +31,12 @@ else
 fi
 
 kernelimage=uImage
-rootfs=vpr200v1-rootfs
-envimage=vpr200v1-env
+rootfs=vpr200v2-rootfs
+envimage=vpr200v2-env
 
 autoboot_timeout=6
 
-nfsroot="/srv/nfs/vpr200/v1"
+nfsroot="/srv/nfs/vpr200/v2"
 consoleargs="console=ttymxc0,115200"
 debugargs="jtag=on nohlt debug earlyprintk=ttymxc0,115200"
 bootargs="lpj=2658304 quiet"
