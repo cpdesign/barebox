@@ -125,7 +125,7 @@
 static uint32_t vpr_cpu_rev;
 static uint32_t vpr_board_rev;
 
-static int vpr_get_macaddr(struct eth_device *eth_dev, unsigned char *mac)
+static int vpr_setup_ethaddr(void)
 {
 	unsigned char buf[6];
 	int fd;
@@ -147,15 +147,12 @@ static int vpr_get_macaddr(struct eth_device *eth_dev, unsigned char *mac)
 		goto out_close;
 	}
 
-	memcpy(mac, buf, 6);
-
-	printf("EEPROM mac is %02x:%02x:%02x:%02x:%02x:%02x\n",
-			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-	ret = is_valid_ether_addr(mac) ? 0 : -EINVAL;
+	ret = is_valid_ether_addr(buf) ? 0 : -EINVAL;
 
 	if (ret)
 		printf("WARN: MAC address stored in eeprom is invalid\n");
+	else
+		eth_register_ethaddr(0, buf);
 
 out_close:
 	close(fd);
@@ -166,7 +163,6 @@ out:
 static struct fec_platform_data fec_info = {
 	.xcv_type	= MII100,
 	.phy_addr	= 0x0,
-	.get_hwaddr	= vpr_get_macaddr,
 };
 
 static int vpr200_mem_init(void)
@@ -642,6 +638,7 @@ static int vpr_devices_init(void)
 	imx35_add_i2c0(NULL);
 	imx35_add_i2c1(NULL);
 
+	vpr_setup_ethaddr();
 	imx35_add_fec(&fec_info);
 
 	imx35_add_fb(&ipu_fb_data);
