@@ -544,10 +544,10 @@ static int vpr_devices_init(void)
 	/* This platform supports NOR, NAND and SD */
 	imx35_add_nand(&nand_info);
 	add_cfi_flash_device(-1, IMX_CS0_BASE, 64 * 1024 * 1024, 0);
-	imx35_add_mmc0(NULL);
 
 	switch ((reg >> 25) & 0x3) {
 	case 0x03:		/* SD/MMC is the source */
+		imx35_add_mmc0(NULL);
 		led_set(diagled, DIAG_LED_MAGENTA);
 		snprintf(bootsrc_msg, MAX_BOOTSRC_MSG, "SD boot: ");
 		devfs_add_partition("disk0", 0x00000, 0x80000, DEVFS_PARTITION_FIXED, "self0");
