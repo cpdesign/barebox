@@ -253,44 +253,6 @@ static void vpr_backlight_init(void)
 	vpr_backlight_set(0);
 }
 
-static void vpr_display_enable(int enable)
-{
-	/* if turning off, disable backlight first */
-	if (!enable)
-		vpr_backlight_set(0);
-
-	gpio_direction_output(LCD_PWR_GPIO, enable ? 0 : 1);
-
-	/* if turning on, enable backlight last */
-	if (enable)
-		vpr_backlight_set(50);
-}
-
-static struct fb_videomode PT0708048 = {
-	/* 800x480 @ 60 Hz */
-	.name		= "PT0708048",
-	.refresh	= 60,
-	.xres		= 800,
-	.yres		= 480,
-	.pixclock	= KHZ2PICOS(33260),
-	.left_margin	= 50,
-	.right_margin	= 156,
-	.upper_margin	= 10,
-	.lower_margin	= 10,
-	.hsync_len	= 1,	/* note: DE only display */
-	.vsync_len	= 1,	/* note: DE only display */
-	.sync		= FB_SYNC_OE_ACT_HIGH,
-	.vmode		= FB_VMODE_NONINTERLACED,
-	.flag		= 0,
-};
-
-static struct imx_ipu_fb_platform_data ipu_fb_data = {
-	.mode		= &PT0708048,
-	.num_modes	= 1,
-	.bpp		= 16,
-	.enable		= vpr_display_enable,
-};
-
 /* ------------------------------------------------------------------------- */
 static void vpr_cpu_cfg_init(void)
 {
@@ -640,8 +602,6 @@ static int vpr_devices_init(void)
 
 	vpr_setup_ethaddr();
 	imx35_add_fec(&fec_info);
-
-	imx35_add_fb(&ipu_fb_data);
 
 	vpr_bp_init();
 	vpr_rfprog_init();
