@@ -1142,7 +1142,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		imx_nand_set_layout(0, 16);
 	}
 
-	if (pdata->flash_bbt) {
+	if (IS_ENABLED(CONFIG_NAND_BBT) && pdata->flash_bbt) {
 		this->bbt_td = &bbt_main_descr;
 		this->bbt_md = &bbt_mirror_descr;
 		/* update flash based bbt */

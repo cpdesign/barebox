@@ -469,7 +469,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 		chip->ecc.layout = &nand_hw_eccoob;
 	}
 
-	if (pdata->flash_bbt) {
+	if (IS_ENABLED(CONFIG_NAND_BBT) && pdata->flash_bbt) {
 		/* use a flash based bbt */
 		chip->options |= NAND_USE_FLASH_BBT;
 	}
