@@ -125,6 +125,8 @@
 static uint32_t vpr_cpu_rev;
 static uint32_t vpr_board_rev;
 
+/* ------------------------------------------------------------------------- */
+
 static int vpr_setup_ethaddr(void)
 {
 	unsigned char buf[6];
