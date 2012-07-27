@@ -367,14 +367,14 @@ BAREBOX_MAGICVAR(vpr_esn_hi, "The high byte of the unit's ESN, as ascii hex");
  * named identifiers.
  */
 enum diag_led_color {
-	DIAG_LED_OFF        = 0x0,
-	DIAG_LED_BLUE       = 0x1,
-	DIAG_LED_GREEN      = 0x2,
-	DIAG_LED_AQUA       = 0x3,
-	DIAG_LED_RED        = 0x4,
-	DIAG_LED_MAGENTA    = 0x5,
-	DIAG_LED_YELLOW     = 0x6,
-	DIAG_LED_WHITE      = 0x7,
+	DIAG_LED_OFF        = 0x1,
+	DIAG_LED_BLUE       = 0x0,
+	DIAG_LED_GREEN      = 0x3,
+	DIAG_LED_AQUA       = 0x2,
+	DIAG_LED_RED        = 0x5,
+	DIAG_LED_MAGENTA    = 0x4,
+	DIAG_LED_YELLOW     = 0x7,
+	DIAG_LED_WHITE      = 0x6,
 };
 
 /* ------------------------------------------------------------------------- */
@@ -759,7 +759,7 @@ static int vpr_console_init(void)
 		led_gpio_rgb_register(&vpr_diag_led_v4);
 	}
 
-	led_set(led_by_name(VPR_DIAG_LED_NAME), DIAG_LED_YELLOW);
+	led_set(led_by_name(VPR_DIAG_LED_NAME), DIAG_LED_RED);
 
 	/* get the GSM init done early as possible */
 	vpr_gsm_init();
