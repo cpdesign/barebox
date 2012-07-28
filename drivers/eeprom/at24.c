@@ -22,6 +22,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <clock.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -70,22 +71,37 @@ static ssize_t at24_write(struct cdev *cdev, const void *_buf, size_t count,
 {
 	struct at24 *priv = to_at24(cdev);
 	const u8 *buf = _buf;
-	const int maxwrite = 8;
+	const int pagesize = 8;
 	int numtowrite;
 	ssize_t numwritten = 0;
 
 	while (count) {
 		int ret;
+		u8 dummy;
+		uint64_t start;
+		int page_remain = pagesize - (offset % pagesize);
 
 		numtowrite = count;
-		if (numtowrite > maxwrite)
-			numtowrite = maxwrite;
+		if (numtowrite > pagesize)
+			numtowrite = pagesize;
+		/* don't write past page */
+		if (numtowrite > page_remain)
+			numtowrite = page_remain;
 
 		ret = i2c_write_reg(priv->client, offset, buf, numtowrite);
 		if (ret < 0)
 			return (ssize_t)ret;
 
-		mdelay(10);
+		/*
+		 * eeprom can take 5-10ms to write, during which time it
+		 * will not respond. Poll it by attempting reads.
+		 */
+		start = get_time_ns();
+		while (!is_timeout(start, 20 * MSECOND)) {
+			ret = i2c_master_recv(priv->client, &dummy, 1);
+			if (ret > 0)
+				break;
+		}
 
 		numwritten += ret;
 		buf += ret;
