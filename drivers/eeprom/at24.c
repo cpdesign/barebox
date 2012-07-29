@@ -67,19 +67,39 @@ static ssize_t at24_read(struct cdev *cdev, void *_buf, size_t count,
 	return numwritten;
 }
 
+static int at24_poll_device(struct i2c_client *client)
+{
+	uint64_t start;
+	u8 dummy;
+	int ret;
+
+	/*
+	 * eeprom can take 5-10ms to write, during which time it
+	 * will not respond. Poll it by attempting reads.
+	 */
+	start = get_time_ns();
+	while (1) {
+		ret = i2c_master_recv(client, &dummy, 1);
+		if (ret > 0)
+			return ret;
+
+		if (is_timeout(start, 20 * MSECOND))
+			return -EIO;
+	}
+
+	return 0;
+}
+
 static ssize_t at24_write(struct cdev *cdev, const void *_buf, size_t count,
 		ulong offset, ulong flags)
 {
 	struct at24 *priv = to_at24(cdev);
 	const u8 *buf = _buf;
 	const int pagesize = priv->page_size;
-	int numtowrite;
 	ssize_t numwritten = 0;
 
 	while (count) {
-		int ret;
-		u8 dummy;
-		uint64_t start;
+		int ret, numtowrite;
 		int page_remain = pagesize - (offset % pagesize);
 
 		numtowrite = count;
@@ -93,21 +113,14 @@ static ssize_t at24_write(struct cdev *cdev, const void *_buf, size_t count,
 		if (ret < 0)
 			return (ssize_t)ret;
 
-		/*
-		 * eeprom can take 5-10ms to write, during which time it
-		 * will not respond. Poll it by attempting reads.
-		 */
-		start = get_time_ns();
-		while (!is_timeout(start, 20 * MSECOND)) {
-			ret = i2c_master_recv(priv->client, &dummy, 1);
-			if (ret > 0)
-				break;
-		}
-
 		numwritten += ret;
 		buf += ret;
 		count -= ret;
 		offset += ret;
+
+		ret = at24_poll_device(priv->client);
+		if (ret < 0)
+			return (ssize_t)ret;
 	}
 
 	return numwritten;
