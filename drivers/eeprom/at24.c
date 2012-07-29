@@ -29,7 +29,8 @@
 
 #include <i2c/i2c.h>
 
-#define DRIVERNAME		"eeprom"
+#define DRIVERNAME		"at24"
+#define DEVICENAME		"eeprom"
 
 struct at24 {
 	struct cdev		cdev;
@@ -179,12 +180,16 @@ static int at24_probe(struct device_d *dev)
 
 	dev->priv = at24;
 
-	at24->cdev.name = DRIVERNAME;
 	at24->client = to_i2c_client(dev);
 	at24->cdev.size = 256;
 	at24->cdev.dev = dev;
 	at24->cdev.ops = &at24_fops;
 
+	if (!at24->cdev.name || at24->cdev.name[0] == '\0') {
+		char buf[20];
+		sprintf(buf, DEVICENAME"%d", dev->id);
+		at24->cdev.name = strdup(buf);
+	}
 	if (at24->page_size == 0) {
 		switch(at24->cdev.size) {
 			case 512:
