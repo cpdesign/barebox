@@ -133,10 +133,13 @@ static int vpr_setup_ethaddr(void)
 	int fd;
 	int ret = -EINVAL;
 
-	fd = open("/dev/eeprom", O_RDONLY);
+	fd = open("/dev/eeprom0", O_RDONLY);
 	if (fd < 0) {
-		printf("Couldn't open eeprom to get MAC\n");
-		goto out;
+		fd = open("/dev/eeprom", O_RDONLY);
+		if (fd < 0) {
+			printf("Couldn't open eeprom to get MAC\n");
+			goto out;
+		}
 	}
 
 	if (lseek(fd, 0, SEEK_SET) < 0) {
@@ -193,7 +196,7 @@ static struct i2c_board_info i2c0_devices[] = {
 	{
 		I2C_BOARD_INFO("mc13xxx-i2c", 0x08),
 	}, {
-		I2C_BOARD_INFO("eeprom", 0x50),
+		I2C_BOARD_INFO("at24", 0x50),
 	},
 };
 
@@ -321,10 +324,13 @@ static int vpr_export_esn(void)
 	int fd;
 	int ret = -EINVAL;
 
-	fd = open("/dev/eeprom", O_RDONLY);
+	fd = open("/dev/eeprom0", O_RDONLY);
 	if (fd < 0) {
-		printf("Couldn't open eeprom to get ESN\n");
-		goto out;
+		fd = open("/dev/eeprom", O_RDONLY);
+		if (fd < 0) {
+			printf("Couldn't open eeprom to get MAC\n");
+			goto out;
+		}
 	}
 
 	if (lseek(fd, 4, SEEK_SET) < 0) {
