@@ -36,6 +36,7 @@ struct at24 {
 	struct i2c_client	*client;
 	/* size in bytes */
 	unsigned int		size;
+	unsigned int		page_size;
 };
 
 #define to_at24(a)		container_of(a, struct at24, cdev)
@@ -71,7 +72,7 @@ static ssize_t at24_write(struct cdev *cdev, const void *_buf, size_t count,
 {
 	struct at24 *priv = to_at24(cdev);
 	const u8 *buf = _buf;
-	const int pagesize = 8;
+	const int pagesize = priv->page_size;
 	int numtowrite;
 	ssize_t numwritten = 0;
 
@@ -130,6 +131,21 @@ static int at24_probe(struct device_d *dev)
 	at24->cdev.size = 256;
 	at24->cdev.dev = dev;
 	at24->cdev.ops = &at24_fops;
+
+	if (at24->page_size == 0) {
+		switch(at24->cdev.size) {
+			case 512:
+			case 1024:
+			case 2048:
+				at24->page_size = 16;
+				break;
+			case 128:
+			case 256:
+			default:
+				at24->page_size = 8;
+				break;
+		}
+	}
 
 	devfs_create(&at24->cdev);
 
