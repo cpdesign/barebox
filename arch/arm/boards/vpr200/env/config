@@ -37,9 +37,10 @@ envimage=vpr200v2-env
 autoboot_timeout=6
 
 nfsroot="/srv/nfs/vpr200/v2"
-consoleargs="console=ttymxc0,115200"
+serconsoleargs="console=ttymxc0,115200"
+consoleargs="quiet"
 debugargs="jtag=on nohlt debug earlyprintk=ttymxc0,115200"
-bootargs="lpj=2658304 quiet"
+bootargs="lpj=2658304"
 
 # include g_ether parameters
 . /env/geconf

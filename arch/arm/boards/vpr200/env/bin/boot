@@ -64,12 +64,13 @@ else
 	bootargs="$bootargs root=/dev/nfs nfsroot=$eth0.serverip:$nfsroot,v3,tcp noinitrd"
 fi
 
-
 # Check for button combo to boot debug mode
 button -m 0x0d
 if [ x$? = x0 ]; then
-	bootargs="$bootargs $consoleargs $debugargs"
+	consoleargs="$serconsoleargs"
 fi
+
+bootargs="$bootargs $consoleargs"
 
 if [ x$kernel_loc = xnet ]; then
 	# Need some kind of address set, so dhcp unless addr is static
