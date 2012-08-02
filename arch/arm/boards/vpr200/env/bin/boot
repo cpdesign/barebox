@@ -40,7 +40,7 @@ fi
 #
 bootargs="$bootargs mtdparts=physmap-flash.0:$nor_parts;mxc_nand:$nand_parts "
 # always specify ubi devices
-bootargs="$bootargs $ubi_data_part $ubi_rootfs_part"
+bootargs="$bootargs $ubi_rootfs_part $ubi_data_part"
 
 if [ x$rootfs_loc != xnet ]; then
 	if [ x$rootfs_loc = xnand ]; then
@@ -52,7 +52,7 @@ if [ x$rootfs_loc != xnet ]; then
 	fi
 
 	if [ x$rootfs_type = xubifs ]; then
-		bootargs="$bootargs root=ubi1:$rootfs"
+		bootargs="$bootargs root=ubi0:$rootfs"
 	elif [ x$rootfs_loc = xmmc ]; then
 		bootargs="$bootargs rootwait root=/dev/mmcblk0p$rootfs_mmc_part"
 	else
