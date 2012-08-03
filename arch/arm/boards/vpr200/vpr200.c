@@ -65,6 +65,7 @@
 /* Board revs for the VPR CPU */
 #define VPR_CPU_V2	0x11
 #define VPR_CPU_V3	0x19
+#define VPR_CPU_V4	0x1a
 
 /* Main board revs. V1 board had no rev ID lines */
 #define VPR_BOARD_V2	0x1
@@ -82,7 +83,8 @@
 #define FEC_RESET_GPIO		IMX_GPIO_NR(3, 0)
 
 #define DIAG_RED_GPIO		IMX_GPIO_NR(3, 14)
-#define DIAG_GREEN_GPIO		IMX_GPIO_NR(3, 15)
+#define DIAG_GREEN_GPIO_V3	IMX_GPIO_NR(3, 15)
+#define DIAG_GREEN_GPIO		IMX_GPIO_NR(1, 14)
 #define DIAG_BLUE_GPIO		IMX_GPIO_NR(3, 30)
 
 #define CPU_CFG_0_GPIO		IMX_GPIO_NR(2, 31)
@@ -105,9 +107,9 @@
 #define BUTTON7_GPIO		IMX_GPIO_NR(1, 11)
 #define BUTTON8_GPIO		IMX_GPIO_NR(1, 12)
 
-#define BUZZER_GPIO_V1		IMX_GPIO_NR(1, 13)
+#define BUZZER_GPIO_V2		IMX_GPIO_NR(1, 13)
 #define BUZZER_GPIO		IMX_GPIO_NR(1, 1)
-#define SPEAKER_GPIO		IMX_GPIO_NR(1, 14)
+#define SPEAKER_GPIO_V3		IMX_GPIO_NR(1, 14)
 
 #define BP_RESET_GPIO		IMX_GPIO_NR(2, 18)
 #define BP_EOC_GPIO		IMX_GPIO_NR(2, 17)
@@ -204,7 +206,15 @@ static struct i2c_board_info i2c1_devices[] = {
 	},
 };
 
-static struct gpio_rgb_led vpr_diag_led = {
+static struct gpio_rgb_led vpr_diag_led_v2_v3 = {
+	.gpio_r = DIAG_RED_GPIO,
+	.gpio_g = DIAG_GREEN_GPIO_V3,
+	.gpio_b = DIAG_BLUE_GPIO,
+	.active_low = 1,
+	.led.name = VPR_DIAG_LED_NAME,
+};
+
+static struct gpio_rgb_led vpr_diag_led_v4 = {
 	.gpio_r = DIAG_RED_GPIO,
 	.gpio_g = DIAG_GREEN_GPIO,
 	.gpio_b = DIAG_BLUE_GPIO,
@@ -457,7 +467,7 @@ static void vpr_buzzer_init(void)
 	if (vpr_board_rev >= VPR_BOARD_V3)
 		gpio_direction_output(BUZZER_GPIO, 0);
 	else
-		gpio_direction_output(BUZZER_GPIO_V1, 0);
+		gpio_direction_output(BUZZER_GPIO_V2, 0);
 }
 
 static void vpr_buzzer_set(int on)
@@ -465,7 +475,7 @@ static void vpr_buzzer_set(int on)
 	if (vpr_board_rev >= VPR_BOARD_V3)
 		gpio_set_value(BUZZER_GPIO, !!on);
 	else
-		gpio_set_value(BUZZER_GPIO_V1, !!on);
+		gpio_set_value(BUZZER_GPIO_V2, !!on);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -747,7 +757,6 @@ static struct pad_desc vpr_pads[] = {
 	MX35_PAD_TX1__GPIO1_14,
 	/* Diag LED */
 	MX35_PAD_USBOTG_PWR__GPIO3_14,
-	MX35_PAD_USBOTG_OC__GPIO3_15,
 	MX35_PAD_D3_HSYNC__GPIO3_30,
 	/* WDOG */
 	MX35_PAD_WDOG_RST__WDOG_WDOG_B,
@@ -766,6 +775,14 @@ static struct pad_desc vpr_pads[] = {
 	MX35_PAD_ATA_CS0__GPIO2_6,
 };
 
+static struct pad_desc vpr_pads_v2_v3[] = {
+	MX35_PAD_USBOTG_OC__GPIO3_15,
+};
+
+static struct pad_desc vpr_pads_v4[] = {
+	MX35_PAD_USBOTG_OC__USB_TOP_USBOTG_OC,
+};
+
 static int vpr_console_init(void)
 {
 	vpr_cpu_cfg_init();
@@ -775,6 +792,18 @@ static int vpr_console_init(void)
 	vpr_board_rev = vpr_read_board_cfg();
 
 	mxc_iomux_v3_setup_multiple_pads(vpr_pads, ARRAY_SIZE(vpr_pads));
+
+	if (vpr_cpu_rev == VPR_CPU_V2 || vpr_cpu_rev == VPR_CPU_V3) {
+		mxc_iomux_v3_setup_multiple_pads(vpr_pads_v2_v3,
+				ARRAY_SIZE(vpr_pads_v2_v3));
+		led_gpio_rgb_register(&vpr_diag_led_v2_v3);
+	} else if (vpr_cpu_rev == VPR_CPU_V4) {
+		mxc_iomux_v3_setup_multiple_pads(vpr_pads_v4,
+				ARRAY_SIZE(vpr_pads_v4));
+		led_gpio_rgb_register(&vpr_diag_led_v4);
+	}
+
+	led_set(led_by_name(VPR_DIAG_LED_NAME), DIAG_LED_YELLOW);
 
 	/* get the GSM init done early as possible */
 	vpr_gsm_init();
@@ -791,9 +820,6 @@ console_initcall(vpr_console_init);
 
 static int vpr_post_console_init(void)
 {
-	led_gpio_rgb_register(&vpr_diag_led);
-	led_set(led_by_name(VPR_DIAG_LED_NAME), DIAG_LED_YELLOW);
-
 	return 0;
 }
 
@@ -972,6 +998,7 @@ static int vpr_final_init(void)
 	switch (vpr_cpu_rev) {
 	case VPR_CPU_V2:
 	case VPR_CPU_V3:
+	case VPR_CPU_V4:
 		printf("VPR Main board version 0x%02x.\n", vpr_board_rev);
 		/*
 		 * init the pmic first so the charge current is increased
