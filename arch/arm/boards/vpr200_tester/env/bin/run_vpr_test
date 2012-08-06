@@ -1,0 +1,8 @@
+#!/bin/sh
+
+PATH=/env/bin
+export PATH
+
+echo "Running VPR200 Tester Program"
+
+vpr_test

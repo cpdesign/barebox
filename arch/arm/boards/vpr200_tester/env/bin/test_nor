@@ -1,0 +1,15 @@
+#!/bin/sh
+
+echo "Testing NOR0"
+
+cp /env/bin/testdata /dev/nor0.barebox
+memcmp /env/bin/testdata /dev/nor0.barebox
+
+result=$?
+
+if [ result = "0" ]; then
+	exit 0
+else 
+	exit 1
+fi
+

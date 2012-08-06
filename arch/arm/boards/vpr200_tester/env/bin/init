@@ -1,0 +1,51 @@
+#!/bin/sh
+
+PATH=/env/bin
+export PATH
+
+. /env/config
+if [ -e /dev/nor0 ]; then
+	addpart /dev/nor0 $nor_parts
+fi
+
+if [ -e /dev/nand0 ]; then
+	addpart /dev/nand0 $nand_parts
+	nand -a /dev/nand0.*
+fi
+
+if [ -e /dev/disk0 ]; then
+	addpart /dev/disk0 $mmc_boot_parts
+fi
+
+echo "PMIC led should be flashing white"
+i2c_write -a 0x08 -r 0x35 0x8a 0xd8 0xad
+i2c_write -a 0x08 -r 0x36 0x00 0x08 0xad
+
+
+echo "Testing VPR GPIO & LED"
+vpr_test
+
+if [ $? = "1" ]; then
+	echo "Error testing GPIO"
+fi
+
+i2c_write -a 0x08 -r 0x35 0x00 0x00 0x00 
+i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00 
+
+
+#echo "Testing NOR"
+#test_nor
+
+#result=$?
+#if [ result = "1" ]; then
+#errorfound="1"
+#fi
+
+#if [ errorfound = "1" ]; then
+#	led diag 7
+#	exit 1
+#fi
+
+#led diag 1
+#exit 0
+

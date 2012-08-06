@@ -12,6 +12,7 @@ config ARCH_TEXT_BASE
 	default 0x83f00000 if MACH_FREESCALE_MX25_3STACK && FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
 	default 0x87f00000 if MACH_FREESCALE_MX25_3STACK && FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
 	default 0x87f00000 if MACH_FREESCALE_MX35_3STACK
+	default 0x87f00000 if MACH_VPR200_TESTER
 	default 0xa7f00000 if MACH_PCA100
 	default 0xa0000000 if MACH_PCM038
 	default 0x87f00000 if MACH_PCM037
@@ -36,6 +37,7 @@ config BOARDINFO
 	default "Freescale i.MX27 ADS" if MACH_IMX27ADS
 	default "Freescale MX35 3Stack" if MACH_FREESCALE_MX35_3STACK
 	default "Freescale MX25 3Stack" if MACH_FREESCALE_MX25_3STACK
+	default "VPR200 Tester" if MACH_VPR200_TESTER
 	default "Phytec phyCard-i.MX27" if MACH_PCA100
 	default "Phytec phyCORE-i.MX27" if MACH_PCM038
 	default "Phytec phyCORE-i.MX31" if MACH_PCM037
@@ -361,6 +363,18 @@ config MACH_FREESCALE_MX35_3STACK
 	help
 	  Say Y here if you are using the Freescale MX35 3stack board equipped
 	  with a Freescale i.MX35 Processor
+ 
+config MACH_VPR200_TESTER
+	bool "VPR200 Tester"
+	select HAS_CFI
+	select HAVE_MMU
+	select MACH_HAS_LOWLEVEL_INIT
+	select ARCH_HAS_L2X0
+	select I2C
+	select I2C_IMX
+	select MFD_MC13XXX
+	help
+	  Say Y here if you are using the VPR200_TESTER (i.MX35 Processor)
 
 config MACH_PCM043
 	bool "phyCORE-i.MX35"
