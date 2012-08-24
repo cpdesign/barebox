@@ -1003,11 +1003,15 @@ static int do_button(int argc, char *argv[])
 	ulong timeout = 0;
 	uint32_t bstate;
 	uint32_t mask = 0;
+	uint32_t ignore = 0;
 	int bnum = 0;
 	int printstate = 0;
 
-	while ((opt = getopt(argc, argv, "m:t:n:p")) > 0) {
+	while ((opt = getopt(argc, argv, "i:m:t:n:p")) > 0) {
 		switch (opt) {
+		case 'i':
+			ignore = simple_strtoul(optarg, NULL, 0);
+			break;
 		case 'm':
 			mask = simple_strtoul(optarg, NULL, 0);
 			break;
@@ -1032,7 +1036,8 @@ static int do_button(int argc, char *argv[])
 				printf("0x%02x\n", bstate);
 
 			if (mask)
-				return (bstate == mask) ? 0 : 1;
+				return ((bstate & ~ignore) == (mask & ~ignore))
+					? 0 : 1;
 
 			if (bnum)
 				return (bstate & (0x01 << (bnum - 1))) ? 0 : 1;

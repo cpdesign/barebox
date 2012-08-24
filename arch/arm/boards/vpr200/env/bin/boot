@@ -5,8 +5,8 @@
 # having to change boot src pins.
 # 
 
-# Check for button combo for SD forced boot
-button -m 0x18
+# Check for button combo for SD forced boot. Ignore power buttons.
+button -m 0x18 -i 0xc0
 
 if [ x$? = x0 ]; then
 	echo "Forcing boot from SD card"
