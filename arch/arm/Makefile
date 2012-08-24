@@ -90,11 +90,11 @@ board-$(CONFIG_MACH_EUKREA_CPUIMX35)		:= eukrea_cpuimx35
 board-$(CONFIG_MACH_EUKREA_CPUIMX51SD)		:= eukrea_cpuimx51
 board-$(CONFIG_MACH_FREESCALE_MX25_3STACK)	:= freescale-mx25-3-stack
 board-$(CONFIG_MACH_FREESCALE_MX35_3STACK)	:= freescale-mx35-3-stack
+board-$(CONFIG_MACH_VPR200)			:= vpr200
 board-$(CONFIG_MACH_IMX21ADS)			:= imx21ads
 board-$(CONFIG_MACH_IMX27ADS)			:= imx27ads
 board-$(CONFIG_MACH_MIOA701)			:= mioa701
 board-$(CONFIG_MACH_MMCCPU)			:= mmccpu
-board-$(CONFIG_MACH_MX1ADS)			:= mx1ads
 board-$(CONFIG_MACH_NOMADIK_8815NHK)		:= nhk8815
 board-$(CONFIG_MACH_NXDB500)			:= netx
 board-$(CONFIG_MACH_OMAP343xSDP)		:= omap343xdsp
@@ -118,11 +118,14 @@ board-$(CONFIG_MACH_MX23EVK)			:= freescale-mx23-evk
 board-$(CONFIG_MACH_CHUMBY)			:= chumby_falconwing
 board-$(CONFIG_MACH_TX28)			:= karo-tx28
 board-$(CONFIG_MACH_MX28EVK)			:= freescale-mx28-evk
+board-$(CONFIG_MACH_CFA10036)			:= crystalfontz-cfa10036
 board-$(CONFIG_MACH_FREESCALE_MX51_PDK)		:= freescale-mx51-pdk
 board-$(CONFIG_MACH_FREESCALE_MX53_LOCO)	:= freescale-mx53-loco
 board-$(CONFIG_MACH_FREESCALE_MX53_SMD)		:= freescale-mx53-smd
 board-$(CONFIG_MACH_GUF_CUPID)			:= guf-cupid
-board-$(CONFIG_MACH_MINI2440)			:= mini2440
+board-$(CONFIG_MACH_MINI2440)			:= friendlyarm-mini2440
+board-$(CONFIG_MACH_MINI6410)			:= friendlyarm-mini6410
+board-$(CONFIG_MACH_TINY6410)			:= friendlyarm-tiny6410
 board-$(CONFIG_MACH_QIL_A9260)			:= qil-a9260
 board-$(CONFIG_MACH_TNY_A9260)			:= tny-a926x
 board-$(CONFIG_MACH_TNY_A9263)			:= tny-a926x
@@ -136,7 +139,9 @@ board-$(CONFIG_MACH_TQMA53)			:= tqma53
 board-$(CONFIG_MACH_TX51)			:= karo-tx51
 board-$(CONFIG_MACH_MX6Q_ARM2)			:= freescale-mx6-arm2
 board-$(CONFIG_MACH_TOSHIBA_AC100)		:= toshiba-ac100
-board-$(CONFIG_MACH_VPR200)			:= vpr200
+board-$(CONFIG_MACH_CCMX51)			:= ccxmx51
+board-$(CONFIG_MACH_TINY210)			:= friendlyarm-tiny210
+board-$(CONFIG_MACH_SABRELITE)			:= freescale-mx6-sabrelite
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
@@ -184,6 +189,15 @@ ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
 KBUILD_IMAGE := MLO
 endif
 
+barebox.ubl: barebox.bin
+	@echo "  UBL    " $@
+	$(Q)scripts/mkublheader barebox.bin > barebox.ubl
+	$(Q)cat barebox.bin >> barebox.ubl
+
+ifeq ($(CONFIG_ARCH_DAVINCI),y)
+KBUILD_IMAGE := barebox.ubl
+endif
+
 all: $(KBUILD_IMAGE)
 
 archprepare: maketools
@@ -207,7 +221,6 @@ endif
 common-y += $(BOARD) $(MACH)
 common-y += arch/arm/lib/ arch/arm/cpu/
 
-lds-$(CONFIG_GENERIC_LINKER_SCRIPT)	:= arch/arm/lib/barebox.lds
-lds-$(CONFIG_BOARD_LINKER_SCRIPT)	:= $(BOARD)/barebox.lds
+lds-y	:= arch/arm/lib/barebox.lds
 
 CLEAN_FILES += include/generated/mach-types.h arch/arm/lib/barebox.lds

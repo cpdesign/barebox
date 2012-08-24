@@ -67,11 +67,11 @@ static inline struct device_d *imx51_add_nand(struct imx_nand_platform_data *pda
 	struct resource res[] = {
 		{
 			.start = MX51_NFC_BASE_ADDR,
-			.size = SZ_4K,
+			.end = MX51_NFC_BASE_ADDR + SZ_4K - 1,
 			.flags = IORESOURCE_MEM,
 		}, {
 			.start = MX51_NFC_AXI_BASE_ADDR,
-			.size = SZ_4K,
+			.end = MX51_NFC_AXI_BASE_ADDR + SZ_4K - 1,
 			.flags = IORESOURCE_MEM,
 		},
 	};
@@ -89,3 +89,7 @@ static inline struct device_d *imx51_add_nand(struct imx_nand_platform_data *pda
 	return dev;
 }
 
+static inline struct device_d *imx51_add_kpp(struct matrix_keymap_data *pdata)
+{
+	return imx_add_kpp((void *)MX51_KPP_BASE_ADDR, pdata);
+}

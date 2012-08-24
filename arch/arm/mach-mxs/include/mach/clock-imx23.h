@@ -18,11 +18,13 @@ unsigned imx_get_emiclk(void);
 unsigned imx_get_ioclk(void);
 unsigned imx_get_armclk(void);
 unsigned imx_get_hclk(void);
+unsigned imx_set_hclk(unsigned);
 unsigned imx_get_xclk(void);
 unsigned imx_get_sspclk(unsigned);
 unsigned imx_set_sspclk(unsigned, unsigned, int);
 unsigned imx_set_ioclk(unsigned);
 unsigned imx_set_lcdifclk(unsigned);
 unsigned imx_get_lcdifclk(void);
+void imx_enable_nandclk(void);
 
 #endif /* MACH_CLOCK_IMX23_H */

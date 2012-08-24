@@ -149,6 +149,7 @@ int command_complete(struct string_list *sl, char *instr)
 
 	return 0;
 }
+EXPORT_SYMBOL(command_complete);
 
 int device_complete(struct string_list *sl, char *instr)
 {
@@ -169,6 +170,7 @@ int device_complete(struct string_list *sl, char *instr)
 
 	return COMPLETE_CONTINUE;
 }
+EXPORT_SYMBOL(device_complete);
 
 static int device_param_complete(char *begin, struct device_d *dev,
 				 struct string_list *sl, char *instr)
@@ -197,11 +199,13 @@ int empty_complete(struct string_list *sl, char *instr)
 {
 	return COMPLETE_END;
 }
+EXPORT_SYMBOL(empty_complete);
 
-int cammand_var_complete(struct string_list *sl, char *instr)
+int command_var_complete(struct string_list *sl, char *instr)
 {
 	return COMPLETE_CONTINUE;
 }
+EXPORT_SYMBOL(command_var_complete);
 
 static int env_param_complete(struct string_list *sl, char *instr, int eval)
 {
@@ -221,7 +225,7 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 		end = ' ';
 	}
 
-	instr_param = strrchr(instr, '.');
+	instr_param = strchr(instr, '.');
 	len = strlen(instr);
 
 	current_c = get_current_context();

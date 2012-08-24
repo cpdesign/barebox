@@ -1,12 +1,12 @@
 #include <common.h>
 #include <mach/imx-flash-header.h>
 #include <mach/imx-regs.h>
+#include <asm/barebox-arm-head.h>
 
-extern void exception_vectors(void);
 
 void __naked __flash_header_start go(void)
 {
-	__asm__ __volatile__("b exception_vectors\n");
+	barebox_arm_head();
 }
 
 /*
@@ -56,7 +56,7 @@ struct imx_dcd_entry __dcd_entry_0x1000 nor_dcd_entry[] = {
  * NOR is not automatically copied anywhere by the boot ROM
  */
 struct imx_flash_header __flash_header_0x1000 nor_flash_header = {
-	.app_code_jump_vector	= IMX_CS0_BASE + ((unsigned int)&exception_vectors - TEXT_BASE),
+	.app_code_jump_vector	= IMX_CS0_BASE + ((unsigned int)&barebox_arm_head - TEXT_BASE),
 	.app_code_barker	= APP_CODE_BARKER,
 	.app_code_csf		= 0,
 	.dcd_ptr_ptr		= IMX_CS0_BASE + 0x1000 + offsetof(struct imx_flash_header, dcd),
@@ -105,7 +105,7 @@ struct imx_dcd_entry __dcd_entry_0x0400 sd_dcd_entry[] = {
 };
 
 struct imx_flash_header __flash_header_0x0400 sd_flash_header = {
-	.app_code_jump_vector	= TEXT_BASE + ((unsigned int)&exception_vectors - TEXT_BASE),
+	.app_code_jump_vector	= TEXT_BASE + ((unsigned int)&barebox_arm_head - TEXT_BASE),
 	.app_code_barker	= APP_CODE_BARKER,
 	.app_code_csf		= 0,
 	.dcd_ptr_ptr		= TEXT_BASE + 0x0400 + offsetof(struct imx_flash_header, dcd),

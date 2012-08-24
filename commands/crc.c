@@ -47,9 +47,12 @@ static int file_crc(char* filename, ulong start, ulong size, ulong *crc,
 	}
 
 	if (start > 0) {
-		ret = lseek(fd, start, SEEK_SET);
-		if (ret == -1) {
+		off_t lseek_ret;
+		errno = 0;
+		lseek_ret = lseek(fd, start, SEEK_SET);
+		if (lseek_ret == (off_t)-1 && errno) {
 			perror("lseek");
+			ret = -1;
 			goto out;
 		}
 	}
@@ -84,8 +87,8 @@ out:
 
 static int do_crc(int argc, char *argv[])
 {
-	ulong start = 0, size = ~0, total = 0;
-	ulong crc = 0, vcrc = 0;
+	loff_t start = 0, size = ~0;
+	ulong crc = 0, vcrc = 0, total = 0;
 	char *filename = "/dev/mem";
 #ifdef CONFIG_CMD_CRC_CMP
 	char *vfilename = NULL;

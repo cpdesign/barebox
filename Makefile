@@ -1,5 +1,5 @@
 VERSION = 2012
-PATCHLEVEL = 07
+PATCHLEVEL = 08
 SUBLEVEL = 0
 EXTRAVERSION =
 NAME = Amissive Actinocutious Kiwi
@@ -540,7 +540,7 @@ quiet_cmd_check_file_size = CHKSIZE $@
 	max_size=`printf "%d" $2`;					\
 	if [ $$size -gt $$max_size ] ;					\
 	then								\
-		echo "$@ size $$size > of the maximum size $$max_size";	\
+		echo "$@ size $$size > of the maximum size $$max_size" >&2;	\
 		exit 1 ;						\
 	fi;
 
@@ -549,12 +549,13 @@ quiet_cmd_sysmap = SYSMAP
       cmd_sysmap = $(CONFIG_SHELL) $(srctree)/scripts/mksysmap
 
 # Link of barebox
+# If CONFIG_KALLSYMS is set .version is already updated
 # Generate System.map and verify that the content is consistent
 # Use + in front of the barebox_version rule to silent warning with make -j2
 # First command is ':' to allow us to use + in front of the rule
 define rule_barebox__
 	:
-
+	$(if $(CONFIG_KALLSYMS),,+$(call cmd,barebox_version))
 	$(call cmd,barebox__)
 
 	$(Q)echo 'cmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
@@ -1003,6 +1004,7 @@ CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map barebox.S \
 		.tmp_kallsyms* barebox_default_env* barebox.ldr \
+		scripts/bareboxenv-target \
 		Doxyfile.version barebox.srec barebox.s5p
 
 # Directories & files removed with 'make mrproper'

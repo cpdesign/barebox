@@ -47,6 +47,8 @@
 # define GET_SSP_DIV(x) ((x) & CLKCTRL_SSP_DIV_MASK)
 # define SET_SSP_DIV(x) ((x) & CLKCTRL_SSP_DIV_MASK)
 #define HW_CLKCTRL_GPMI 0x080
+# define CLKCTRL_GPMI_CLKGATE (1 << 31)
+# define CLKCTRL_GPMI_DIV_MASK 0x3ff
 /* note: no set/clear register! */
 #define HW_CLKCTRL_SPDIF 0x090
 /* note: no set/clear register! */
@@ -184,10 +186,32 @@ unsigned imx_get_hclk(void)
 
 	if (readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & 0x20) {
 		rate *= readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & 0x1f;
-		rate >>= 5U; /* / 32 */
+		rate = DIV_ROUND_UP(rate, 32);
 	} else
-		rate /= readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & 0x1f;
+		rate = DIV_ROUND_UP(rate,
+			readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & 0x1f);
 	return rate * 1000;
+}
+
+unsigned imx_set_hclk(unsigned nc)
+{
+	unsigned root_rate = imx_get_armclk();
+	unsigned reg, div;
+
+	div = DIV_ROUND_UP(root_rate, nc);
+	if ((div == 0) || (div >= 32))
+		return 0;
+
+	if ((root_rate < nc) && (root_rate == 64000000))
+		div = 3;
+
+	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & ~0x3f;
+	writel(reg | div, IMX_CCM_BASE + HW_CLKCTRL_HBUS);
+
+	while (readl(IMX_CCM_BASE + HW_CLKCTRL_HBUS) & (1 << 31))
+		;
+
+	return imx_get_hclk();
 }
 
 /*
@@ -264,6 +288,23 @@ unsigned imx_set_sspclk(unsigned index, unsigned nc, int high)
 		writel(CLKCTRL_CLKSEQ_BYPASS_SSP, IMX_CCM_BASE + HW_CLKCTRL_CLKSEQ + 4);
 
 	return imx_get_sspclk(index);
+}
+
+void imx_enable_nandclk(void)
+{
+	uint32_t reg;
+
+	/* Clear bypass bit; refman says clear, but fsl-code does set. Hooray! */
+	writel(CLKCTRL_CLKSEQ_BYPASS_GPMI,
+		IMX_CCM_BASE + HW_CLKCTRL_CLKSEQ + BIT_SET);
+
+	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_GPMI) & ~CLKCTRL_GPMI_CLKGATE;
+	writel(reg, IMX_CCM_BASE + HW_CLKCTRL_GPMI);
+	udelay(1000);
+	/* Initialize DIV to 1 */
+	reg &= ~CLKCTRL_GPMI_DIV_MASK;
+	reg |= 1;
+	writel(reg, IMX_CCM_BASE + HW_CLKCTRL_GPMI);
 }
 
 void imx_dump_clocks(void)

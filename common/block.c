@@ -24,6 +24,7 @@
 #include <malloc.h>
 #include <linux/err.h>
 #include <linux/list.h>
+#include <dma.h>
 
 #define BLOCKSIZE(blk)	(1 << blk->blockbits)
 
@@ -179,7 +180,7 @@ static void *block_get(struct block_device *blk, int block)
 }
 
 static ssize_t block_read(struct cdev *cdev, void *buf, size_t count,
-		unsigned long offset, unsigned long flags)
+		loff_t offset, unsigned long flags)
 {
 	struct block_device *blk = cdev->priv;
 	unsigned long mask = BLOCKSIZE(blk) - 1;
@@ -256,7 +257,7 @@ static int block_put(struct block_device *blk, const void *buf, int block)
 }
 
 static ssize_t block_write(struct cdev *cdev, const void *buf, size_t count,
-		unsigned long offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct block_device *blk = cdev->priv;
 	unsigned long mask = BLOCKSIZE(blk) - 1;
@@ -338,7 +339,7 @@ static struct file_operations block_ops = {
 
 int blockdevice_register(struct block_device *blk)
 {
-	size_t size = blk->num_blocks * BLOCKSIZE(blk);
+	loff_t size = (loff_t)blk->num_blocks * BLOCKSIZE(blk);
 	int ret;
 	int i;
 
@@ -357,7 +358,7 @@ int blockdevice_register(struct block_device *blk)
 
 	for (i = 0; i < 8; i++) {
 		struct chunk *chunk = xzalloc(sizeof(*chunk));
-		chunk->data = xmalloc(BUFSIZE);
+		chunk->data = dma_alloc(BUFSIZE);
 		chunk->num = i;
 		list_add_tail(&chunk->list, &blk->idle_blocks);
 	}
@@ -376,12 +377,12 @@ int blockdevice_unregister(struct block_device *blk)
 	writebuffer_flush(blk);
 
 	list_for_each_entry_safe(chunk, tmp, &blk->buffered_blocks, list) {
-		free(chunk->data);
+		dma_free(chunk->data);
 		free(chunk);
 	}
 
 	list_for_each_entry_safe(chunk, tmp, &blk->idle_blocks, list) {
-		free(chunk->data);
+		dma_free(chunk->data);
 		free(chunk);
 	}
 

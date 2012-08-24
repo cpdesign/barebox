@@ -34,6 +34,7 @@ barebox.bin
 barebox.srec
 barebox.netx
 barebox.s5p
+barebox.ubl
 barebox.map
 System.map
 Module.symvers
@@ -65,3 +66,4 @@ cscope.*
 *.patch
 scripts/gen_netx_image
 scripts/s5p_cksum
+scripts/bareboxenv-target

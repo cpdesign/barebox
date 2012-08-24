@@ -717,6 +717,9 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 	if (bbt_masked_page == 0xffffffff || ret)
 		return ret;
 
+	if (!IS_ENABLED(CONFIG_NAND_BBT))
+		return ret;
+
 	for (chipnr = 0; chipnr < chip->numchips; chipnr++) {
 		if (!rewrite_bbt[chipnr])
 			continue;

@@ -44,7 +44,7 @@ struct at24 {
 #define to_at24(a)		container_of(a, struct at24, cdev)
 
 static ssize_t at24_read(struct cdev *cdev, void *_buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct at24 *priv = to_at24(cdev);
 	u8 *buf = _buf;
@@ -93,7 +93,7 @@ static int at24_poll_device(struct i2c_client *client)
 }
 
 static ssize_t at24_write(struct cdev *cdev, const void *_buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct at24 *priv = to_at24(cdev);
 	const u8 *buf = _buf;
@@ -102,18 +102,16 @@ static ssize_t at24_write(struct cdev *cdev, const void *_buf, size_t count,
 
 	while (count) {
 		int ret, numtowrite;
-		int page_remain = pagesize - (offset % pagesize);
+		int page_remain = pagesize - ((ulong)offset % pagesize);
 
 		numtowrite = count;
-		if (numtowrite > pagesize)
-			numtowrite = pagesize;
 		/* don't write past page */
 		if (numtowrite > page_remain)
 			numtowrite = page_remain;
 
 		ret = i2c_write_reg(priv->client, offset, buf, numtowrite);
 		if (ret < 0)
-			return (ssize_t)ret;
+			return ret;
 
 		numwritten += ret;
 		buf += ret;
@@ -122,7 +120,7 @@ static ssize_t at24_write(struct cdev *cdev, const void *_buf, size_t count,
 
 		ret = at24_poll_device(priv->client);
 		if (ret < 0)
-			return (ssize_t)ret;
+			return ret;
 	}
 
 	return numwritten;
@@ -131,7 +129,7 @@ static ssize_t at24_write(struct cdev *cdev, const void *_buf, size_t count,
 /* max page size of any of the at24 family devices is 16 bytes */
 #define AT24_MAX_PAGE_SIZE	16
 
-static ssize_t at24_erase(struct cdev *cdev, size_t count, unsigned long offset)
+static ssize_t at24_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	struct at24 *priv = to_at24(cdev);
 	char erase[AT24_MAX_PAGE_SIZE];
@@ -142,18 +140,16 @@ static ssize_t at24_erase(struct cdev *cdev, size_t count, unsigned long offset)
 
 	while (count) {
 		int ret, numtowrite;
-		int page_remain = pagesize - (offset % pagesize);
+		int page_remain = pagesize - ((ulong)offset % pagesize);
 
 		numtowrite = count;
-		if (numtowrite > pagesize)
-			numtowrite = pagesize;
 		/* don't write past page */
 		if (numtowrite > page_remain)
 			numtowrite = page_remain;
 
 		ret = i2c_write_reg(priv->client, offset, erase, numtowrite);
 		if (ret < 0)
-			return (ssize_t)ret;
+			return ret;
 
 		numwritten += ret;
 		count -= ret;
@@ -161,7 +157,7 @@ static ssize_t at24_erase(struct cdev *cdev, size_t count, unsigned long offset)
 
 		ret = at24_poll_device(priv->client);
 		if (ret < 0)
-			return (ssize_t)ret;
+			return ret;
 	}
 
 	return 0;

@@ -58,7 +58,9 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 
 	kernel = data->os_res->start + data->os_entry;
 
-	if (data->initrd_file && data->initrd_address == UIMAGE_INVALID_ADDRESS) {
+	initrd_start = data->initrd_address;
+
+	if (data->initrd_file && initrd_start == UIMAGE_INVALID_ADDRESS) {
 		initrd_start = data->os_res->start + SZ_8M;
 
 		if (bootm_verbose(data)) {
@@ -80,7 +82,7 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 
 	if (data->initrd_res) {
 		initrd_start = data->initrd_res->start;
-		initrd_size = data->initrd_res->size;
+		initrd_size = resource_size(data->initrd_res);
 	}
 
 	if (bootm_verbose(data)) {
@@ -154,7 +156,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 		}
 	} else {
 
-		of_res = request_sdram_region("oftree", r->start + r->size, end);
+		of_res = request_sdram_region("oftree", r->start + resource_size(r), end);
 		if (!of_res) {
 			perror("zImage: oftree request_sdram_region");
 			return -ENOMEM;
@@ -310,9 +312,9 @@ static int aimage_load_resource(int fd, struct resource *r, void* buf, int ps)
 {
 	int ret;
 	void *image = (void *)r->start;
-	unsigned to_read = ps - r->size % ps;
+	unsigned to_read = ps - resource_size(r) % ps;
 
-	ret = read_full(fd, image, r->size);
+	ret = read_full(fd, image, resource_size(r));
 	if (ret < 0)
 		return ret;
 
@@ -399,7 +401,7 @@ static int do_bootm_aimage(struct image_data *data)
 	if (!getenv("aimage_noverwrite_tags"))
 		armlinux_set_bootparams((void*)header->tags_addr);
 
-	if (data->oftree) {
+	if (IS_ENABLED(CONFIG_OFTREE) && data->oftree) {
 		ret = of_fix_tree(data->oftree);
 		if (ret)
 			goto err_out;

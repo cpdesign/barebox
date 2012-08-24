@@ -181,7 +181,7 @@ int i2c_read_reg(struct i2c_client *client, u32 addr, u8 *buf, u16 count)
 	msg->len = i;
 
 	status = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-	dev_dbg(&client->dev, "%s: %zu@%d --> %d\n", __func__,
+	dev_dbg(&client->dev, "%s: %zu@%u --> %d\n", __func__,
 		count, addr, status);
 
 	if (status == ARRAY_SIZE(msg))
@@ -214,7 +214,7 @@ int i2c_write_reg(struct i2c_client *client, u32 addr, const u8 *buf, u16 count)
 	memcpy(msg->buf + i, buf, count);
 
 	status = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-	dev_dbg(&client->dev, "%s: %u@%d --> %d\n", __func__,
+	dev_dbg(&client->dev, "%s: %u@%u --> %d\n", __func__,
 		count, addr, status);
 
 	if (status == ARRAY_SIZE(msg))
@@ -251,7 +251,7 @@ struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	strcpy(client->dev.name, chip->type);
 	client->dev.type_data = client;
 	client->dev.platform_data = chip->platform_data;
-	client->dev.id = -1;
+	client->dev.id = DEVICE_ID_DYNAMIC;
 	client->adapter = adapter;
 	client->addr = chip->addr;
 

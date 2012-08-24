@@ -7,6 +7,7 @@ menu "Input device support"
 config KEYBOARD_GPIO
 	bool "GPIO Buttons"
 	depends on GENERIC_GPIO
+	select POLLER
 	help
 	  This driver implements support for buttons connected
 	  to GPIO pins of various CPUs (and some other chips).
@@ -15,5 +16,18 @@ config KEYBOARD_GPIO
 	  directly to such GPIO pins.  Your board-specific
 	  setup logic must also provide a platform device,
 	  with configuration data saying which GPIOs are used.
+
+config KEYBOARD_IMX_KEYPAD
+	bool "IMX Keypad"
+	depends on ARCH_IMX
+	select POLLER
+	help
+	  This driver implements support for buttons connected
+	  to the IMX keypad matrix.
+
+	  Say Y here if your device has buttons connected
+	  to the IMX keypad matrix.  Your board-specific
+	  setup logic must also provide a 'matrix_keymap_data' structure,
+	  defining the used keys.
 
 endmenu

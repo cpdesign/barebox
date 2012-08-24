@@ -33,6 +33,7 @@
 #include <libbb.h>
 #include <magicvar.h>
 #include <environment.h>
+#include <libgen.h>
 
 void *read_file(const char *filename, size_t *size)
 {
@@ -427,6 +428,25 @@ out:
 	return ret;
 }
 
+static int parent_check_directory(const char *path)
+{
+	struct stat s;
+	int ret;
+	char *dir = dirname(xstrdup(path));
+
+	ret = stat(dir, &s);
+
+	free(dir);
+
+	if (ret)
+		return -ENOENT;
+
+	if (!S_ISDIR(s.st_mode))
+		return -ENOTDIR;
+
+	return 0;
+}
+
 const char *getcwd(void)
 {
 	return cwd;
@@ -513,6 +533,12 @@ int open(const char *pathname, int flags, ...)
 	if (exist_err && !(flags & O_CREAT)) {
 		ret = exist_err;
 		goto out1;
+	}
+
+	if (exist_err) {
+		ret = parent_check_directory(path);
+		if (ret)
+			goto out1;
 	}
 
 	f = get_file();
@@ -617,7 +643,7 @@ int read(int fd, void *buf, size_t count)
 
 	fsdrv = dev_to_fs_driver(dev);
 
-	if (f->pos + count > f->size)
+	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size)
 		count = f->size - f->pos;
 
 	if (!count)
@@ -646,7 +672,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 	dev = f->dev;
 
 	fsdrv = dev_to_fs_driver(dev);
-	if (f->pos + count > f->size) {
+	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size) {
 		ret = fsdrv->truncate(dev, f, f->pos + count);
 		if (ret) {
 			if (ret != -ENOSPC)
@@ -692,12 +718,12 @@ int flush(int fd)
 	return ret;
 }
 
-off_t lseek(int fildes, off_t offset, int whence)
+loff_t lseek(int fildes, loff_t offset, int whence)
 {
 	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f = &files[fildes];
-	off_t pos;
+	loff_t pos;
 	int ret;
 
 	if (check_fd(fildes))
@@ -714,12 +740,12 @@ off_t lseek(int fildes, off_t offset, int whence)
 
 	switch (whence) {
 	case SEEK_SET:
-		if (offset > f->size)
+		if (f->size != FILE_SIZE_STREAM && offset > f->size)
 			goto out;
 		pos = offset;
 		break;
 	case SEEK_CUR:
-		if (offset + f->pos > f->size)
+		if (f->size != FILE_SIZE_STREAM && offset + f->pos > f->size)
 			goto out;
 		pos = f->pos + offset;
 		break;
@@ -1153,6 +1179,10 @@ int mkdir (const char *pathname, mode_t mode)
 	char *freep = p;
 	int ret;
 
+	ret = parent_check_directory(p);
+	if (ret)
+		goto out;
+
 	ret = path_check_prereq(pathname, S_UB_DOES_NOT_EXIST);
 	if (ret)
 		goto out;
@@ -1243,7 +1273,7 @@ static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
 	}
 }
 
-ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong flags)
+ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
 	ulong size;
 	struct device_d *dev;
@@ -1252,13 +1282,13 @@ ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, ulong offset, ulong
 		return -1;
 	dev = cdev->dev;
 
-	size = min((ulong)count, dev->resource[0].size - offset);
+	size = min((loff_t)count, resource_size(&dev->resource[0]) - offset);
 	memcpy_sz(buf, dev_get_mem_region(dev, 0) + offset, size, flags & O_RWSIZE_MASK);
 	return size;
 }
 EXPORT_SYMBOL(mem_read);
 
-ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, ulong offset, ulong flags)
+ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
 {
 	ulong size;
 	struct device_d *dev;
@@ -1267,7 +1297,7 @@ ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, ulong offset
 		return -1;
 	dev = cdev->dev;
 
-	size = min((ulong)count, dev->resource[0].size - offset);
+	size = min((loff_t)count, resource_size(&dev->resource[0]) - offset);
 	memcpy_sz(dev_get_mem_region(dev, 0) + offset, buf, size, flags & O_RWSIZE_MASK);
 	return size;
 }

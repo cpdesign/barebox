@@ -147,7 +147,7 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 	if ((phys & (SZ_1M - 1)) || (bank->size & (SZ_1M - 1)))
 		return -EINVAL;
 
-	ptes = memalign(0x400, num_ptes * sizeof(u32));
+	ptes = memalign(PAGE_SIZE, num_ptes * sizeof(u32));
 
 	debug("ptes: 0x%p ttb_start: 0x%08lx ttb_end: 0x%08lx\n",
 			ptes, ttb_start, ttb_end);
@@ -164,6 +164,9 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 			(0 << 4);
 		pte += 256;
 	}
+
+	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
+	dma_flush_range((unsigned long)ptes, num_ptes * sizeof(u32));
 
 	tlb_invalidate();
 
@@ -299,11 +302,9 @@ void *dma_alloc_coherent(size_t size)
 	size = PAGE_ALIGN(size);
 	ret = xmemalign(4096, size);
 
-#ifdef CONFIG_MMU
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
 	remap_range(ret, size, PTE_FLAGS_UNCACHED);
-#endif
 
 	return ret;
 }
@@ -320,9 +321,7 @@ void *phys_to_virt(unsigned long phys)
 
 void dma_free_coherent(void *mem, size_t size)
 {
-#ifdef CONFIG_MMU
 	remap_range(mem, size, PTE_FLAGS_CACHED);
-#endif
 
 	free(mem);
 }

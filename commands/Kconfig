@@ -6,6 +6,10 @@ config COMMAND_SUPPORT
 	depends on !SHELL_NONE
 	default y
 
+config HAS_POWEROFF
+	bool
+	default n
+
 if COMMAND_SUPPORT
 
 menu "commands                      "
@@ -24,6 +28,10 @@ config CMD_EXEC
 config CMD_SLEEP
 	tristate
 	prompt "sleep"
+
+config CMD_MSLEEP
+	tristate
+	prompt "msleep"
 
 config CMD_SAVEENV
 	tristate
@@ -198,6 +206,20 @@ config CMD_AUTOMOUNT
 	  this directory available (discover USB devices, bring network interface
 	  up and finally mount the filesystem).
 
+config CMD_BASENAME
+	tristate
+	prompt "basename"
+	help
+	  Strip directory and suffix from filenames and store the result in a
+	  environment variable
+
+config CMD_DIRNAME
+	tristate
+	prompt "dirname"
+	help
+	  Strip last component of file name and store the result in a
+	  environment variable
+
 endmenu
 
 menu "console                       "
@@ -327,6 +349,7 @@ config CMD_BOOTM
 	tristate
 	default y
 	select CRC32
+	select UIMAGE
 	select UNCOMPRESS
 	select FILETYPE
 	select GLOBALVAR
@@ -375,6 +398,7 @@ config CMD_BOOTM_AIMAGE
 	  Support using Android Images.
 
 config CMD_UIMAGE
+	select UIMAGE
 	tristate
 	prompt "uimage"
 	help
@@ -421,6 +445,11 @@ config CMD_LINUX16
 config CMD_RESET
 	tristate
 	prompt "reset"
+
+config CMD_POWEROFF
+	tristate
+	depends on HAS_POWEROFF
+	prompt "poweroff"
 
 config CMD_GO
 	tristate
@@ -551,6 +580,25 @@ config CMD_USB
 	default y
 	help
 	  The usb command allows to rescan for USB devices.
+
+menuconfig CMD_WD
+	bool
+	depends on WATCHDOG
+	prompt "wd command                    "
+	help
+	  The 'wd' command which allows to start, stop and trigger the onboard
+	  watchdog.
+
+if CMD_WD
+
+config CMD_WD_DEFAULT_TIMOUT
+	int
+	prompt "default timeout"
+	help
+	  Define the default timeout value in [seconds] if the first call of
+	  'wd' is done without a timeout value (which means the watchdog gets
+	  enabled and re-triggered with the default timeout value).
+endif
 
 endmenu
 

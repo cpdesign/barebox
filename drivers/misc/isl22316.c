@@ -104,7 +104,7 @@ int isl22316_set_value(struct isl22316 *isl22316, u8 val, int save)
 EXPORT_SYMBOL(isl22316_set_value);
 
 static ssize_t isl22316_read(struct cdev *cdev, void *_buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct isl22316 *priv = to_isl22316(cdev);
 	u8 *buf = _buf;
@@ -124,7 +124,7 @@ static ssize_t isl22316_read(struct cdev *cdev, void *_buf, size_t count,
 }
 
 static ssize_t isl22316_write(struct cdev *cdev, const void *_buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct isl22316 *isl22316 = to_isl22316(cdev);
 	const u8 *buf = _buf;

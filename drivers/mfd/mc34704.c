@@ -52,7 +52,7 @@ int mc34704_reg_read(struct mc34704 *mc34704, u8 reg, u8 *val)
 
 	return ret == 1 ? 0 : ret;
 }
-EXPORT_SYMBOL(mc34704_reg_read)
+EXPORT_SYMBOL(mc34704_reg_read);
 
 int mc34704_reg_write(struct mc34704 *mc34704, u8 reg, u8 val)
 {
@@ -62,10 +62,10 @@ int mc34704_reg_write(struct mc34704 *mc34704, u8 reg, u8 val)
 
 	return ret == 1 ? 0 : ret;
 }
-EXPORT_SYMBOL(mc34704_reg_write)
+EXPORT_SYMBOL(mc34704_reg_write);
 
 static ssize_t mc34704_read(struct cdev *cdev, void *_buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct mc34704 *priv = to_mc34704(cdev);
 	u8 *buf = _buf;
@@ -85,7 +85,7 @@ static ssize_t mc34704_read(struct cdev *cdev, void *_buf, size_t count,
 }
 
 static ssize_t mc34704_write(struct cdev *cdev, const void *_buf, size_t count,
-		ulong offset, ulong flags)
+		loff_t offset, ulong flags)
 {
 	struct mc34704 *mc34704 = to_mc34704(cdev);
 	const u8 *buf = _buf;

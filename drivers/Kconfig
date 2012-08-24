@@ -15,8 +15,9 @@ source "drivers/mfd/Kconfig"
 source "drivers/led/Kconfig"
 source "drivers/eeprom/Kconfig"
 source "drivers/input/Kconfig"
-
+source "drivers/watchdog/Kconfig"
 source "drivers/pwm/Kconfig"
+source "drivers/dma/Kconfig"
 source "drivers/misc/Kconfig"
 
 endmenu

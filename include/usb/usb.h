@@ -159,8 +159,9 @@ struct usb_device {
 	int epmaxpacketout[16];		/* OUTput endpoint specific maximums */
 
 	int configno;			/* selected config number */
-	struct usb_device_descriptor descriptor; /* Device Descriptor */
+	struct usb_device_descriptor *descriptor; /* Device Descriptor */
 	struct usb_config_descriptor config; /* config descriptor */
+	struct devrequest *setup_packet;
 
 	int have_langid;		/* whether string_langid is valid yet */
 	int string_langid;		/* language ID for strings */
@@ -270,12 +271,14 @@ void usb_rescan(void);
 		((x_ & 0xFF000000UL) >> 24)); \
 	})
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#ifdef __LITTLE_ENDIAN
 # define swap_16(x) (x)
 # define swap_32(x) (x)
-#else
+#elif defined BIG_ENDIAN
 # define swap_16(x) __swap_16(x)
 # define swap_32(x) __swap_32(x)
+#else
+#error "could not determine byte order"
 #endif
 
 /*

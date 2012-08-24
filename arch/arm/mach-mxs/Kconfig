@@ -6,12 +6,14 @@ config ARCH_TEXT_BASE
 	default 0x42000000 if MACH_CHUMBY
 	default 0x47000000 if MACH_TX28
 	default 0x47000000 if MACH_MX28EVK
+	default 0x47000000 if MACH_CFA10036
 
 config BOARDINFO
 	default "Freescale i.MX23-EVK" if MACH_MX23EVK
 	default "Chumby Falconwing" if MACH_CHUMBY
 	default "Karo TX28" if MACH_TX28
 	default "Freescale i.MX28-EVK" if MACH_MX28EVK
+	default "Crystalfontz CFA-10036" if MACH_CFA10036
 
 comment "Freescale i.MX System-on-Chip"
 
@@ -61,8 +63,15 @@ config MACH_TX28
 
 config MACH_MX28EVK
 	bool "mx28-evk"
+	select MXS_OCOTP
 	help
 	  Say Y here if you are using the Freescale i.MX28-EVK board
+
+config MACH_CFA10036
+	bool "cfa-10036"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	help
+	  Say Y here if you are using the Crystalfontz CFA-10036 module
 
 endchoice
 
@@ -79,6 +88,25 @@ config MXS_OCOTP
 	  Note that the OCOTP words are grouped consecutively (allocation
 	  internal view). Don't use register offsets here, the SET, CLR and
 	  TGL registers are not mapped!
+
+config MXS_OCOTP_WRITABLE
+	bool "OCOTP write support"
+	depends on MXS_OCOTP
+	help
+	  Enable this option to add writing to OCOTP.
+	  Warning: blown bits can not be unblown. Use with care.
+
+	  Before being actually able to blow the bits, you need to explicitely
+	  enable writing:
+		 ocotp0.permanent_write_enable=1
+
+config MXS_CMD_BCB
+	depends on NAND_MXS
+	tristate "Nand bcb command"
+	help
+	  To be able to boot from NAND the i.MX23/28 need a Boot Control Block
+	  in flash. This option enabled the 'bcb' command which can be used to
+	  generate this block during runtime.
 
 endmenu
 

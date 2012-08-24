@@ -1,15 +1,3 @@
-#
-#
-#
-config BOARD_LINKER_SCRIPT
-	bool
-	default n
-
-config GENERIC_LINKER_SCRIPT
-	bool
-	default y
-	depends on !BOARD_LINKER_SCRIPT
-
 config ARM
 	bool
 	select HAS_KALLSYMS
@@ -68,15 +56,23 @@ config ARCH_PXA
 	select GENERIC_GPIO
 
 config ARCH_S3C24xx
-	bool "Samsung S3C2410, S3C2412, S3C2413, S3C2440, S3C2442, S3C2443"
+	bool "Samsung S3C2410, S3C2440"
 	select ARCH_SAMSUNG
 	select CPU_ARM920T
 	select GENERIC_GPIO
+#
+# Currently no board support
+#
+#config ARCH_S5PCxx
+#	bool "Samsung S5PC110, S5PV210"
+#	select ARCH_SAMSUNG
+#	select CPU_V7
+#	select GENERIC_GPIO
 
-config ARCH_S5PCxx
-	bool "Samsung S5PC110, S5PV210"
+config ARCH_S3C64xx
+	bool "Samsung S3C64xx"
 	select ARCH_SAMSUNG
-	select CPU_V7
+	select CPU_V6
 	select GENERIC_GPIO
 
 config ARCH_VERSATILE
@@ -135,7 +131,15 @@ config CMD_ARM_CPUINFO
 	default y
 	help
 	  Say yes here to get a cpuinfo command to show some
-	  information about the cp15 registers
+	  CPU information using the cp15 registers
+
+config CMD_ARM_MMUINFO
+	bool "mmuinfo command"
+	depends on CPU_V7
+	default n
+	help
+	  Say yes here to get a mmuinfo command to show some
+	  MMU and cache information using the cp15 registers
 
 config CPU_V7_DCACHE_SKIP
 	bool "Skip DCache Invalidate"

@@ -28,10 +28,12 @@
 #include <driver.h>
 #include <init.h>
 #include <asm/armlinux.h>
+#include <asm-generic/sections.h>
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <nand.h>
 #include <io.h>
+#include <mach/devices-s3c24xx.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c24xx-nand.h>
 #include <mach/s3c-generic.h>
@@ -129,8 +131,7 @@ static int a9m2440_devices_init(void)
 	writel(reg, S3C_MISCCR);
 
 	/* ----------- the devices the boot loader should work with -------- */
-	add_generic_device("s3c24x0_nand", DEVICE_ID_DYNAMIC, NULL, S3C24X0_NAND_BASE, 0,
-			   IORESOURCE_MEM, &nand_info);
+	s3c24xx_add_nand(&nand_info);
 	/*
 	 * cs8900 network controller onboard
 	 * Connected to CS line 5 + A24 and interrupt line EINT9,
@@ -158,14 +159,13 @@ device_initcall(a9m2440_devices_init);
 #ifdef CONFIG_S3C_NAND_BOOT
 void __bare_init nand_boot(void)
 {
-	s3c24x0_nand_load_image((void *)TEXT_BASE, 256 * 1024, 0);
+	s3c24x0_nand_load_image(_text, 256 * 1024, 0);
 }
 #endif
 
 static int a9m2440_console_init(void)
 {
-	add_generic_device("s3c_serial", DEVICE_ID_DYNAMIC, NULL, S3C_UART1_BASE,
-			S3C_UART1_SIZE, IORESOURCE_MEM, NULL);
+	s3c24xx_add_uart1();
 	return 0;
 }
 
