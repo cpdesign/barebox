@@ -136,3 +136,23 @@ void __noreturn reset_cpu (unsigned long addr)
 	/*NOTREACHED*/
 }
 EXPORT_SYMBOL(reset_cpu);
+
+void __noreturn poweroff(void)
+{
+	u32 reg;
+	u16 wdt_reg;
+
+#ifdef CONFIG_ARCH_IMX35
+	/* clock must be active in order to work */
+	reg = readl(IMX_CCM_BASE + CCM_CGR2);
+	reg |= 0x3 << CCM_CGR2_WDT_SHIFT;
+	reg = writel(reg, IMX_CCM_BASE + CCM_CGR2);
+#endif
+
+	wdt_reg = 0x0110;
+	writew(wdt_reg, IMX_WDT_BASE);
+
+	while (1);
+	/*NOTREACHED*/
+}
+EXPORT_SYMBOL(poweroff)
