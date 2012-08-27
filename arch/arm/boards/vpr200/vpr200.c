@@ -123,6 +123,10 @@
 
 #define GPIO_SD_CD		IMX_GPIO_NR(3, 1)
 #define GPIO_SD_WP		IMX_GPIO_NR(3, 2)
+
+#define GPIO_SHUNT_ENABLE	IMX_GPIO_NR(2, 1)
+#define GPIO_SHUNT_SENSE	IMX_GPIO_NR(2, 3)
+
 /* ------------------------------------------------------------------------- */
 
 static uint32_t vpr_cpu_rev;
@@ -750,10 +754,11 @@ static iomux_v3_cfg_t vpr_pads[] = {
 	MX35_PAD_ATA_DATA1__GPIO2_14,
 	MX35_PAD_ATA_DATA2__GPIO2_15,
 	MX35_PAD_ATA_DATA3__GPIO2_16,
-	/* Spare GPIO */
+	/* Charge Shunt GPIO*/
 	MX35_PAD_SD2_CLK__GPIO2_1,
 	MX35_PAD_SD2_DATA0__GPIO2_2,
 	MX35_PAD_SD2_DATA1__GPIO2_3,
+	/* Spare GPIO */
 	MX35_PAD_SD2_DATA2__GPIO2_4,
 	MX35_PAD_SD2_DATA3__GPIO2_5,
 	MX35_PAD_ATA_CS0__GPIO2_6,
@@ -934,6 +939,9 @@ static int vpr_pmic_init(struct mc13xxx *mc13xxx)
 	val |= (0x3 << 4); /* debounce pwron1 to 750 ms */
 	mask |= (0x3 < 4);
 	mc13xxx_set_bits(mc13xxx, MC13892_REG_POWER_CTL2, mask, val);
+
+	/* Enable GPIO shunt, active low */
+	gpio_direction_output(GPIO_SHUNT_ENABLE, 0);
 
 	return err;
 }
