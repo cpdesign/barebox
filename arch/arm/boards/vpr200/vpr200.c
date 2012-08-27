@@ -1312,3 +1312,30 @@ BAREBOX_CMD_START(vprbacklight)
 	.usage  = "Set backlight value",
 BAREBOX_CMD_END
 
+#define MC13XXX_IRQSENS0_BPONS (1 << 12)
+
+static int do_battery_check(int argc, char *argv[])
+{
+	unsigned int val;
+	struct mc13xxx *mc13xxx = mc13xxx_get();
+
+	if (mc13xxx_reg_read(mc13xxx, MC13892_REG_INT_SENSE0, &val)) {
+		return -EINVAL;
+	}
+
+	if (!(val & MC13XXX_IRQSENS0_BPONS)) {
+		printf("Battery: low\n");
+		return 1;
+	} else {
+		printf("Battery: OK\n");
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
+BAREBOX_CMD_START(battery_check)
+	.cmd	= do_battery_check,
+	.usage  = "Check that the battery voltage is above a minimum"
+		  " acceptable level",
+BAREBOX_CMD_END

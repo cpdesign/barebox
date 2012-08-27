@@ -5,6 +5,13 @@
 # having to change boot src pins.
 # 
 
+# check that the battery is above BPON
+battery_check
+if [ x$? != x0 ]; then
+	buzzer -f 220 -d 200 && buzzer -f 20 -d 50
+	buzzer -f 220 -d 200 && buzzer -f 20 -d 50
+fi
+
 # Check for button combo for SD forced boot. Ignore power buttons.
 button -m 0x18 -i 0xc0
 
