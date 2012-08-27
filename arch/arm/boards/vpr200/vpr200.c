@@ -120,6 +120,9 @@
 #define RF_TMS_GPIO		IMX_GPIO_NR(2, 16)
 
 #define GSM_GPIO		IMX_GPIO_NR(1, 13)
+
+#define GPIO_SD_CD		IMX_GPIO_NR(3, 1)
+#define GPIO_SD_WP		IMX_GPIO_NR(3, 2)
 /* ------------------------------------------------------------------------- */
 
 static uint32_t vpr_cpu_rev;
@@ -494,6 +497,14 @@ static void vpr_rfprog_init(void)
 }
 
 /* ------------------------------------------------------------------------- */
+
+static struct esdhc_platform_data vpr_esdhc0 = {
+	.cd_gpio = GPIO_SD_CD,
+	.cd_type = ESDHC_CD_GPIO,
+	.wp_gpio = GPIO_SD_WP,
+	.wp_type = ESDHC_WP_GPIO,
+};
+
 /*
  * Board initialization order:
  *  core_initcall
@@ -552,7 +563,7 @@ static int vpr_devices_init(void)
 	/* This platform supports NOR, NAND and SD */
 	imx35_add_nand(&nand_info);
 	add_cfi_flash_device(-1, IMX_CS0_BASE, 64 * 1024 * 1024, 0);
-	imx35_add_mmc0(NULL);
+	imx35_add_mmc0(&vpr_esdhc0);
 
 	switch ((reg >> 25) & 0x3) {
 	case 0x03:		/* SD/MMC is the source */
@@ -676,6 +687,15 @@ static iomux_v3_cfg_t vpr_pads[] = {
 	/* LCD enable */
 	MX35_PAD_D3_VSYNC__GPIO1_2,
 	MX35_PAD_ATA_CS1__GPIO2_7,
+	/* SDCARD */
+	MX35_PAD_SD1_CMD__ESDHC1_CMD,
+	MX35_PAD_SD1_CLK__ESDHC1_CLK,
+	MX35_PAD_SD1_DATA0__ESDHC1_DAT0,
+	MX35_PAD_SD1_DATA1__ESDHC1_DAT1,
+	MX35_PAD_SD1_DATA2__ESDHC1_DAT2,
+	MX35_PAD_SD1_DATA3__ESDHC1_DAT3,
+	MX35_PAD_ATA_DA1__GPIO3_1,
+	MX35_PAD_ATA_DA2__GPIO3_2,
 	/* Display */
 	MX35_PAD_LD0__IPU_DISPB_DAT_0,
 	MX35_PAD_LD1__IPU_DISPB_DAT_1,
