@@ -1,0 +1,46 @@
+#!/bin/sh
+
+PATH=/env/bin
+export PATH
+
+echo "Testing memory"
+
+# First Bank
+#
+# test 1 iteration of first bank
+# this doesn't test the entire ram bank as we cant test the 
+# malloc and stack area.
+mtest 0x80000000 0x85ffffff 0 1
+
+if [ $? = "1" ]; then
+	# flashing yellow
+	i2c_write -a 0x08 -r 0x35 0x82 0x28 0x22
+	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
+	echo "Error testing bank 0"
+
+	sleep 5
+fi
+
+
+# leds off
+i2c_write -a 0x08 -r 0x35 0x00 0x00 0x00
+i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
+
+# Second bank
+#
+# test 1 iteration of second bank
+mtest 0x90000000 0x97ffffff 0 1
+
+if [ $? = "1" ]; then
+	# flashing blue + red
+	i2c_write -a 0x08 -r 0x35 0x00 0x08 0x22
+	i2c_write -a 0x08 -r 0x36 0x00 0x08 0x22 
+	echo "Error testing bank 1"
+
+	sleep 5
+fi
+
+# leds off
+i2c_write -a 0x08 -r 0x35 0x00 0x00 0x00 
+i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00 
+
