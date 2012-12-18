@@ -5,3 +5,22 @@ export PATH
 
 echo "Testing EEPROM"
 
+cp /env/bin/testdata /dev/eeprom0
+
+memcmp -s /env/bin/testdata -d /dev/eeprom0 -b 0 0 
+
+if [ x$? != x0 ]; then
+	# solid red + flashing blue 
+	i2c_write -a 0x08 -r 0x35 0x9f 0xd8 0x22
+	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00 
+	echo "Error testing EEPROM"
+
+	sleep 5
+fi
+
+
+# leds off
+i2c_write -a 0x08 -r 0x35 0x00 0x00 0x00 
+i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00 
+
+

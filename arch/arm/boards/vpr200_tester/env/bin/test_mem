@@ -5,6 +5,9 @@ export PATH
 
 echo "Testing memory"
 
+MEMERROR="0"
+export MEMERROR
+
 # First Bank
 #
 # test 1 iteration of first bank
@@ -18,13 +21,14 @@ if [ $? = "1" ]; then
 	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
 	echo "Error testing bank 0"
 
+	MEMERROR="1"
 	sleep 5
 fi
 
 
 # leds off
 i2c_write -a 0x08 -r 0x35 0x00 0x00 0x00
-i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
+i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00 
 
 # Second bank
 #
@@ -37,10 +41,15 @@ if [ $? = "1" ]; then
 	i2c_write -a 0x08 -r 0x36 0x00 0x08 0x22 
 	echo "Error testing bank 1"
 
+	MEMERROR="1"
 	sleep 5
 fi
 
 # leds off
 i2c_write -a 0x08 -r 0x35 0x00 0x00 0x00 
 i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00 
+
+echo memerror $MEMERROR
+
+exit $MEMERROR
 

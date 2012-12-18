@@ -25,15 +25,18 @@ echo "PMIC led should be flashing white"
 i2c_write -a 0x08 -r 0x35 0x8a 0xd8 0xad
 i2c_write -a 0x08 -r 0x36 0x00 0x08 0xad
 
+HASERROR="0"
+export HASERROR
 
 echo "Testing VPR GPIO & LED"
 vpr_test
 
-if [ $? = "1" ]; then
+if [ x$? != x0 ]; then
 	# solid red
 	i2c_write -a 0x08 -r 0x35 0x00 0x09 0xfd
 	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00 
 	echo "Error testing GPIO"
+	HASERROR="1"
 
 	sleep 5
 fi
@@ -42,21 +45,30 @@ fi
 i2c_write -a 0x08 -r 0x35 0x00 0x00 0x00 
 i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00 
 
+# memory test
 /env/bin/test_mem
+if [ x$? != x0 ]; then
+	echo "Error testing MEM"
+	HASERROR="1"
+fi
 
-#echo "Testing NOR"
-#test_nor
 
-#result=$?
-#if [ result = "1" ]; then
-#errorfound="1"
-#fi
+/env/bin/test_eeprom
+if [ x$? != x0 ]; then
+	echo "Error testing EEPROM"
+	HASERROR="1"
+fi
 
-#if [ errorfound = "1" ]; then
-#	led diag 7
-#	exit 1
-#fi
-
-#led diag 1
-#exit 0
-
+echo Tests finished
+echo $HASERROR
+if [ x$HASERROR = x0 ]; then
+	#solid green
+	i2c_write -a 0x08 -r 0x35 0x9f 0xd0 0x00 
+	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
+	echo "All good."
+else
+	#solid red
+	i2c_write -a 0x08 -r 0x35 0x00 0x09 0xfd
+	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00 
+	echo "Something FAILED"
+fi
