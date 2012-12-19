@@ -4,18 +4,6 @@ PATH=/env/bin
 export PATH
 
 . /env/config
-if [ -e /dev/nor0 ]; then
-	addpart /dev/nor0 $nor_parts
-fi
-
-if [ -e /dev/nand0 ]; then
-	addpart /dev/nand0 $nand_parts
-	nand -a /dev/nand0.*
-fi
-
-if [ -e /dev/disk0 ]; then
-	addpart /dev/disk0 $mmc_boot_parts
-fi
 
 # leds off
 i2c_write -a 0x08 -r 0x35 0x00 0x00 0x00 
