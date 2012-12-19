@@ -1,0 +1,59 @@
+#!/bin/sh
+#
+# Simple script to test whether devices are present
+#
+
+PATH=/env/bin
+export PATH
+
+echo "Testing devices present"
+
+DEVICESERROR="0"
+export DEVICESERROR
+
+if [ ! -e /dev/eeprom0 ]; then
+	# solid red + flashing blue
+	i2c_write -a 0x08 -r 0x35 0x9f 0xd8 0x22
+	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
+	echo "Error, no EEPROM present at /dev/eeprom0"
+	DEVICESERROR="1"
+
+	sleep 5
+fi
+
+if [ ! -e /dev/mc13xxx ]; then
+	# solid red + flashing blue
+	i2c_write -a 0x08 -r 0x35 0x9f 0xd8 0x22
+	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
+	echo "Error, no device present at /dev/mc13xxx"
+	DEVICESERROR="1"
+
+	sleep 5
+fi
+
+if [ ! -e /dev/nand0 ]; then
+	# solid red + flashing blue
+	i2c_write -a 0x08 -r 0x35 0x9f 0xd8 0x22
+	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
+	echo "Error, no NAND present at /dev/nand0"
+	DEVICESERROR="1"
+
+	sleep 5
+fi
+
+if [ ! -e /dev/nor0 ]; then
+	# solid red + flashing blue
+	i2c_write -a 0x08 -r 0x35 0x9f 0xd8 0x22
+	i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
+	echo "Error, no NOR present at /dev/nor0"
+	DEVICESERROR="1"
+
+	sleep 5
+fi
+
+# leds off
+i2c_write -a 0x08 -r 0x35 0x00 0x00 0x00
+i2c_write -a 0x08 -r 0x36 0x00 0x00 0x00
+
+exit $DEVICESERROR
+

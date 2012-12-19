@@ -59,6 +59,12 @@ if [ x$? != x0 ]; then
 	HASERROR="1"
 fi
 
+/env/bin/test_devices
+if [ x$? != x0 ]; then
+	echo "Error testing DEVICES"
+	HASERROR="1"
+fi
+
 echo Tests finished
 echo $HASERROR
 if [ x$HASERROR = x0 ]; then
