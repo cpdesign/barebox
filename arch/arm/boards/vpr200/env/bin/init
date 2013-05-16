@@ -6,6 +6,9 @@ export PATH
 #
 buzzer -f 880 -d 30
 
+# force reset audio dac in case audio playing during soft reset
+i2c_write -b 1 -a 0x47 -r 0x55 0x80
+
 . /env/config
 if [ -e /dev/nor0 ]; then
 	addpart /dev/nor0 $nor_parts
