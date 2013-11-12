@@ -130,7 +130,8 @@
 #define MC13892_REVISION_3_2		8
 #define MC13892_REVISION_3_2a		9
 #define MC13892_REVISION_3_3		10
-#define MC13892_REVISION_3_5		11
+#define MC13892_REVISION_3_4		11
+#define MC13892_REVISION_3_5		12
 
 #define MC13783_SWX_VOLTAGE(x)		((x) & 0x3f)
 #define MC13783_SWX_VOLTAGE_DVS(x)	(((x) & 0x3f) << 6)
