@@ -225,6 +225,9 @@ static struct mc13892_rev mc13892_revisions[] = {
 	{ 0x1a, MC13892_REVISION_3_2, "3.2" },
 	{ 0x02, MC13892_REVISION_3_2a, "3.2a" },
 	{ 0x1b, MC13892_REVISION_3_3, "3.3" },
+	{ 0x12, MC13892_REVISION_3_3, "3.3" },
+	{ 0x13, MC13892_REVISION_3_4, "3.4" },
+	{ 0x14, MC13892_REVISION_3_5, "3.5" },
 	{ 0x1d, MC13892_REVISION_3_5, "3.5" },
 };
 
