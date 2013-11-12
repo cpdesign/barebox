@@ -257,11 +257,14 @@ static int mc13xxx_query_revision(struct mc13xxx *mc13xxx)
 			if ((rev_id & 0x1f) == mc13892_revisions[i].rev_id)
 				break;
 
-		if (i == ARRAY_SIZE(mc13892_revisions))
-			return -EINVAL;
-
-		rev = mc13892_revisions[i].rev;
-		revstr = mc13892_revisions[i].revstr;
+		if (i == ARRAY_SIZE(mc13892_revisions)) {
+			/* Report future unknown revisions as 3.5 */
+			rev = MC13892_REVISION_3_5;
+			revstr = "3.5+";
+                } else {
+			rev = mc13892_revisions[i].rev;
+			revstr = mc13892_revisions[i].revstr;
+		}
 
 		if (rev == MC13892_REVISION_2_0) {
 			if ((rev_id >> 9) & 0x3) {
