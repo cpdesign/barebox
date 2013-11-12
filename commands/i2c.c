@@ -38,7 +38,7 @@ static int do_i2c_probe(int argc, char *argv[])
 
 	adapter = i2c_get_adapter(simple_strtoul(argv[1], NULL, 0));
 	if (!adapter)
-		return -ENODEV;
+		return COMMAND_ERROR;
 	client.adapter = adapter;
 
 	startaddr = simple_strtol(argv[2], NULL, 0);
@@ -105,7 +105,7 @@ static int do_i2c_write(int argc, char *argv[])
 	adapter = i2c_get_adapter(bus);
 	if (!adapter) {
 		printf("i2c bus %d not found\n", bus);
-		return -ENODEV;
+		return COMMAND_ERROR;
 	}
 
 	client.adapter = adapter;
@@ -183,7 +183,7 @@ static int do_i2c_read(int argc, char *argv[])
 	adapter = i2c_get_adapter(bus);
 	if (!adapter) {
 		printf("i2c bus %d not found\n", bus);
-		return -ENODEV;
+		return COMMAND_ERROR;
 	}
 
 	client.adapter = adapter;
