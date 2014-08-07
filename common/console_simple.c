@@ -2,6 +2,7 @@
 #include <common.h>
 #include <fs.h>
 #include <errno.h>
+#include <poller.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
@@ -131,6 +132,7 @@ int getc(void)
 {
 	if (!console)
 		return -EINVAL;
+
 	return console->getc(console);
 }
 EXPORT_SYMBOL(getc);
@@ -146,6 +148,8 @@ EXPORT_SYMBOL(console_flush);
 /* test if ctrl-c was pressed */
 int ctrlc (void)
 {
+	poller_call();
+
 	if (tstc() && getc() == 3)
 		return 1;
 	return 0;
