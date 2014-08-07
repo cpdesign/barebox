@@ -57,6 +57,7 @@
 #include <i2c/i2c.h>
 #include <mfd/mc13xxx.h>
 #include <led.h>
+#include <poller.h>
 
 /* ------------------------------------------------------------------------- */
 /* Board revs for the VPR CPU */
@@ -330,6 +331,23 @@ static int vpr_devices_init(void)
 }
 
 device_initcall(vpr_devices_init);
+
+static void wdt_feed_func(struct poller_struct *poller)
+{
+	writew(0x5555, IMX_WDT_BASE + 2);
+	writew(0xaaaa, IMX_WDT_BASE + 2);
+}
+
+static struct poller_struct wdt_poller = {
+	.func = wdt_feed_func,
+};
+
+int wdt_feed_init(void)
+{
+	return poller_register(&wdt_poller);
+}
+late_initcall(wdt_feed_init);
+
 
 static iomux_v3_cfg_t vpr_pads[] = {
 	/* FEC */
