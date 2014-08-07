@@ -13,7 +13,7 @@ extern void exception_vectors(void);
  *
  * This header must be at the download position
  */
-#define RUNNABLE_FROM_IROM_BOOTLOADER 0
+#define RUNNABLE_FROM_IROM_BOOTLOADER 1
 
 #if RUNNABLE_FROM_IROM_BOOTLOADER
 struct imx_flash_header __flash_header_start test_flash_header = {
