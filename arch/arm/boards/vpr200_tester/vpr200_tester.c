@@ -654,6 +654,47 @@ void __bare_init nand_boot(void)
 #endif
 
 /* ------------------------------------------------------------------------ */
+static int do_vpr200_sdraminit(int argc, char* argv[])
+{
+	writel(0x00000304, 0xB8001010);
+	/* LPDDR delay line soft reset */
+	writel(0x0000030C, 0xB8001010);
+	/* bank1 */
+	writel(0x007ffc2f, 0xB8001004);
+	writel(0x92220000, 0xB8001000);
+	writel(0x12345678, 0x80000400);
+	writel(0xA2220000, 0xB8001000);
+	writel(0x87654321, 0x80000000);
+	writel(0x87654321, 0x80000000);
+	writel(0xB2220000, 0xB8001000);
+	writeb(0xda, 0x80000233);
+	writeb(0xda, 0x82000780);
+	writeb(0xda, 0x82000400);
+	writel(0x82226080,  0xB8001000);
+	/* bank 2 */
+	writel(0x007ffc2f,  0xB800100C);
+	writel(0x92220000,  0xB8001008);
+	writel(0x12345678,  0x90000400);
+	writel(0xA2220000,  0xB8001008);
+	writel(0x87654321,  0x90000000);
+	writel(0x87654321,  0x90000000);
+	writel(0xB2220000,  0xB8001008);
+	writeb(0xda, 0x90000233);
+	writeb(0xda, 0x92000780);
+	writeb(0xda, 0x92000400);
+	writel(0x82226080,  0xB8001008);
+    /* finish off */
+	writel(0x00000304,  0xB8001010);
+
+    return 0;
+};
+
+BAREBOX_CMD_START(vpr200_sdraminit)
+	.cmd	= do_vpr200_sdraminit,
+	.usage  = "initialize SDRAM registers",
+BAREBOX_CMD_END
+
+/* ------------------------------------------------------------------------ */
 static void dump_binary(unsigned int val)
 {
 	int ii;
