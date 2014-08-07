@@ -25,6 +25,7 @@
 #include <malloc.h>
 #include <notifier.h>
 #include <io.h>
+#include <poller.h>
 
 #define URXD0	0x0	/* Receiver Register */
 #define URTX0	0x40	/* Transmitter Register */
@@ -263,7 +264,9 @@ static int imx_serial_getc(struct console_device *cdev)
 					struct imx_serial_priv, cdev);
 	unsigned char ch;
 
-	while (readl(priv->regs + UTS) & UTS_RXEMPTY);
+	while (readl(priv->regs + UTS) & UTS_RXEMPTY) {
+        poller_call();
+    }
 
 	ch = readl(priv->regs + URXD0);
 
