@@ -592,6 +592,248 @@ static int vpr_pmic_init(struct mc13xxx *mc13xxx)
 	return err;
 }
 
+static int vpr_pmic_adcinit(struct mc13xxx *mc13xxx)
+{
+	int err = 0;
+	unsigned int mask = 0;
+	unsigned int val = 0;
+
+	// ADC0 is all 0s
+	mc13xxx_set_bits(mc13xxx, MC13892_REG_ADC0, mask, val);
+
+	// ADC calibration
+	/* ADEN = 1 */
+	mask |= 0x01;
+	val |= 0x01;
+	/* ADCCAL = 1 */
+	mask |= 1 << 2;
+	val |= 1 << 2;
+	mc13xxx_set_bits(mc13xxx, MC13892_REG_ADC1, mask, val);
+
+	udelay(10 * 1000);
+
+	return err;
+}
+
+/*
+ * Starts a conversion in either single channel or multichannel mode.
+ * Channels 12-15 map to the TOUCHnn inputs in normal mode.
+ * Single mode seems to have some issues in the values for channel 4
+ * reported by the IC.
+ */
+static int adc_start_conversion(struct mc13xxx *mc13xxx, int channel, int single)
+{
+	unsigned int mask = 0;
+	unsigned int val = 0;
+
+	/* ADEN = 1 */
+	mask |= 0x01;
+	val |= 0x01;
+
+	if (channel >= 8) {
+		/* ADSEL = 1, use touchscreen inputs as ADC */
+		mask |= 0x01 << 3;
+		val |= 0x01 << 3;
+		channel = channel % 8;
+	}
+
+	if (single) {
+		/* RAND = 1, single chanel mode */
+		mask |= 0x01 << 1;
+		val |= 0x01 << 1;
+		/* ADA1x = channel */
+		mask |= 0x07 << 5;
+		val |= channel << 5;
+		/* ADA2x = channel (ignored in single channel mode) */
+		mask |= 0x07 << 8;
+		val |= channel << 8;
+	}
+
+	// ASC = 1, start conversion
+	mask |= 0x01 << 20;
+	val |= 0x01 << 20;
+	// ADTRIGIGN = 1, ignore adtrig
+	mask |= 0x01 << 21;
+	val |= 0x01 << 21;
+
+	mc13xxx_reg_write(mc13xxx, MC13892_REG_ADC1, val);
+
+	return 0;
+}
+
+static int adc_read_values(struct mc13xxx *mc13xxx, unsigned int vals[8])
+{
+	int ii;
+	unsigned int mask = 0;
+	unsigned int val = 0;
+
+	for (ii = 0; ii < 4; ++ii) {
+		unsigned int v1;
+		unsigned int v2;
+		unsigned int tmp = 0;
+		mask = 0;
+		val = 0;
+		// set up read out channels
+		/* ADEN = 0 */
+		mask |= 0x01;
+		val |= 0x01;
+
+		/* ADA1x = channel */
+		mask |= 0x07 << 5;
+		val |= ii << 5;
+		/* ADA2x = channel + 4 ) */
+		mask |= 0x07 << 8;
+		val |= (ii + 4) << 8;
+
+		mc13xxx_reg_write(mc13xxx, MC13892_REG_ADC1, val);
+
+		mc13xxx_reg_read(mc13xxx, MC13892_REG_ADC2, &tmp);
+		v1 = (tmp & 0xfff) >> 2;
+		v2 = (tmp & 0xfff000) >> (2 + 12);
+
+		vals[ii] = v1;
+		vals[ii+4] = v2;
+	}
+	return 0;
+}
+
+/*
+ * averages a set of values, discarding the min and max values
+ * (see MC13892 errata about random errant adc values).
+ */
+static int avg_val(unsigned int vals[8])
+{
+	int ii;
+	int total = 0;
+	int min = 0x7fffffff;
+	int max = 0;
+	for (ii = 0; ii < 8; ++ii) {
+		int v = vals[ii];
+		if (v < min) {
+			min = v;
+		}
+		if (v > max) {
+			max = v;
+		}
+		total += vals[ii];
+	}
+	total -= min;
+	total -= max;
+
+	return total / (8 - 2);
+}
+
+static int is_val_close_enough(int val, int ref)
+{
+	int thresh = ref * 15 / 100;
+
+	if (val > ref + thresh) {
+		return 0;
+	}
+	if (val < ref - thresh) {
+		return 0;
+	}
+	return 1;
+}
+
+// The adc values are [0,1023] which map to [0V, 2.4V]
+static int conv_adc_to_mV(int val)
+{
+	return val * 2400 / 1023;
+}
+
+/*
+ * This reads each of the TOUCHnn inputs as general ADC inputs.
+ * Input is sampled 8 times and then averaged. The average value needs to be
+ * within 15% of a reference value in order to be successful.
+ *
+ * Required hardware is a string of 8 equal value resistors between a 3.15V
+ * and GND, and then taking the 4 lowest taps to channel 12..15.
+ * (Eight resistors are used so that the highest used value is below the 2.4V
+ * input buffer).
+ *
+ * NOTE: The multiple channel sample mode is used as there was a problem with the
+ * readings for the TOUCHXN value (channel 12).
+ */
+static int do_tsinputs_test(int argc, char* argv[])
+{
+	struct mc13xxx *mc13xxx;
+	int ii;
+	int jj;
+	unsigned int values[8];
+	unsigned int chanresults[8][8];
+	unsigned int avgs[8];
+	int failcount = 0;
+
+	const char * labels[] = {
+		"",
+		"",
+		"",
+		"",
+		"TOUCHXN",
+		"TOUCHXP",
+		"TOUCHYN",
+		"TOUCHYP"
+	};
+	const unsigned int ref[8] = {
+		0,
+		0,
+		0,
+		0,
+		168,
+		336,
+		504,
+		671
+	};
+
+	mc13xxx = mc13xxx_get();
+	if (!mc13xxx) {
+		printf("FAILED to get mc13xxx handle!\n");
+		return 1;
+	}
+
+	vpr_pmic_adcinit(mc13xxx);
+
+	for (ii = 0; ii < 8; ++ii) {
+		adc_start_conversion(mc13xxx, 4 + 8, 0);
+
+		udelay(50 * 1000);
+
+		adc_read_values(mc13xxx, values);
+
+		printf("%d:\t%d %d %d %d  %d %d %d %d\n", ii,
+			values[0], values[1], values[2], values[3],
+			values[4], values[5], values[6], values[7]
+		);
+
+		for (jj = 0; jj < 8; ++jj) {
+			chanresults[jj][ii] = values[jj];
+		}
+	}
+
+	for (ii = 4; ii < 8; ++ii) {
+		avgs[ii] = avg_val(chanresults[ii]);
+		printf("%d: %s: ref: %4d\tmeas: %4d  (%4dmV)\n",
+		       ii, labels[ii], ref[ii], avgs[ii], conv_adc_to_mV(avgs[ii]));
+
+		if (!is_val_close_enough(avgs[ii], ref[ii])) {
+			++failcount;
+			printf("  FAILED: should be close to %d\n", avgs[ii]);
+		}
+	}
+
+	if (!failcount) {
+		printf("  All good\n");
+	}
+
+	return failcount;
+}
+
+BAREBOX_CMD_START(tsinputs_test)
+	.cmd	= do_tsinputs_test,
+	.usage  = "Do Touchscreen ADC inputs test",
+BAREBOX_CMD_END
+
 static int vpr_fec_init_v2(struct mc13xxx *mc13xxx)
 {
 	int err = 0;
