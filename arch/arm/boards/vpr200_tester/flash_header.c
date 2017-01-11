@@ -40,7 +40,9 @@ void __naked __flash_header_start go(void)
 * This is useful for testing boards which don't boot with suspect RAM,
 * (Use this in conjunction with setting TEXT_BASE to 0x97f00000)
 */
+#ifndef USE_MEM_BANK_1
 #define USE_MEM_BANK_1 1
+#endif
 
 struct imx_dcd_entry __dcd_entry_0x1000 nor_dcd_entry[] = {
 	{ .ptr_type = 4, .addr = 0xB8001010, .val = 0x00000304, },
