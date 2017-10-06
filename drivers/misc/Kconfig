@@ -7,4 +7,8 @@ config ISL22316
 	bool "isl22316 digital controlled potentiometer"
 	depends on I2C
 
+config ISL22346
+	bool "isl22346 digital controlled potentiometer"
+	depends on I2C
+
 endif

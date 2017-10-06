@@ -73,7 +73,7 @@ fi
 
 # Check for button combo to boot debug mode
 button -m 0x0d
-if [ x$? = x0 ]; then
+if [ "x$?" = "x0" ]; then
 	consoleargs="$serconsoleargs"
 fi
 
@@ -98,7 +98,7 @@ fi
 bootm $bootm_opt $kdev
 
 # if bootm failed, give an triple error buzz
-if [ x$? != x0 ];then
+if [ "x$?" != "x0" ];then
 	buzzer -f 220 -d 150 && buzzer -f 20 -d 50 
 	buzzer -f 220 -d 150 && buzzer -f 20 -d 50 
 	buzzer -f 220 -d 150 && buzzer -f 20 -d 50 

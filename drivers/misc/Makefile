@@ -1,1 +1,2 @@
 obj-$(CONFIG_ISL22316) += isl22316.o
+obj-$(CONFIG_ISL22346) += isl22346.o

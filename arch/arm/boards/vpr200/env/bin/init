@@ -31,11 +31,11 @@ fi
 # unless button combo pressed, jump straight into booting
 button -m 0x03
 
-if [ x$? = x0 ]; then
+if [ "x$?" = "x0" ]; then
 	echo -n "Hit any key to stop autoboot: "
 	timeout -a $autoboot_timeout
 
-	if [ x$? != x0 ]; then
+	if [ "x$?" !=  "x0" ]; then
 		echo
 		echo "type update -h for info on updating flash"
 		echo

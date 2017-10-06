@@ -59,6 +59,7 @@
 #include <mfd/mc13xxx.h>
 #include <led.h>
 #include <misc/isl22316.h>
+#include <misc/isl22346.h>
 
 /* ------------------------------------------------------------------------- */
 /* Board revs for the VPR CPU */
@@ -69,6 +70,10 @@
 /* Main board revs. V1 board had no rev ID lines */
 #define VPR_BOARD_V2	0x1
 #define VPR_BOARD_V3	0x2
+/* changed bmp085 to bmp280, no difference to barebox */
+#define VPR_BOARD_V4	0x3
+/* changed isl2236 to isl22346 */
+#define VPR_BOARD_V5	0x4
 
 #define VPR_DIAG_LED_NAME "diag"
 
@@ -210,6 +215,8 @@ static struct i2c_board_info i2c0_devices[] = {
 static struct i2c_board_info i2c1_devices[] = {
 	{
 		I2C_BOARD_INFO("isl22316", 0x2b),
+	}, {
+		I2C_BOARD_INFO("isl22346", 0x50),
 	},
 };
 
@@ -229,7 +236,7 @@ static struct gpio_rgb_led vpr_diag_led_v4 = {
 	.led.name = VPR_DIAG_LED_NAME,
 };
 
-static void vpr_backlight_set(int value)
+static void vpr_backlight_set_V4(int value)
 {
 	struct isl22316 *isl22316 = isl22316_get();
 	int setval = value;
@@ -250,7 +257,32 @@ static void vpr_backlight_set(int value)
 	isl22316_set_value(isl22316, setval, 0);
 }
 
-static void vpr_backlight_init(void)
+static void vpr_backlight_set_V5(int value)
+{
+	struct isl22346 *isl22346 = isl22346_get();
+	int setval = value;
+
+	if (!isl22346) {
+		printf("WARN: Couldn't get isl22316\n");
+		return;
+	}
+
+	/* Force the backlight off */
+	gpio_direction_output(LCD_LED_ENABLE_GPIO, value == 0 ? 0 : 1);
+
+	isl22346_set_value(isl22346, setval, 0);
+}
+
+static void vpr_backlight_set(int value)
+{
+	if (vpr_board_rev <= VPR_BOARD_V4) {
+		vpr_backlight_set_V4(value);
+	} else {
+		vpr_backlight_set_V5(value);
+	}
+}
+
+static int vpr_backlight_init_V4(void)
 {
 	struct isl22316 *isl22316;
 
@@ -258,6 +290,35 @@ static void vpr_backlight_init(void)
 
 	if (!isl22316) {
 		printf("WARN: Couldn't get isl22316\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+static int vpr_backlight_init_V5(void)
+{
+	struct isl22346 *isl22346;
+
+	isl22346 = isl22346_get();
+
+	if (!isl22346) {
+		printf("WARN: Couldn't get isl22316\n");
+		return -EINVAL;
+	}
+	return 0;
+}
+
+static void vpr_backlight_init(void)
+{
+	int initOk = -1;
+	if (vpr_board_rev <= VPR_BOARD_V4) {
+		initOk = vpr_backlight_init_V4();
+	} else {
+		initOk = vpr_backlight_init_V5();
+	}
+
+	if (initOk < 0) {
+		printf("WARN: couldn't init backlight\n");
 		return;
 	}
 
