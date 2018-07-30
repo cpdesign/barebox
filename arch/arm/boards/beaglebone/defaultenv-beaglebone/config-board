@@ -1,0 +1,14 @@
+#!/bin/sh
+echo "DTX config-board"
+
+global linux.bootargs.dyn.video
+global linux.bootargs.dyn.optargs
+
+echo Boot from $bootsource $bootsource_instance
+
+if [ $bootsource_instance = 0 ]
+then
+    global.boot.default=sd
+else
+    global.boot.default=emmc
+fi
