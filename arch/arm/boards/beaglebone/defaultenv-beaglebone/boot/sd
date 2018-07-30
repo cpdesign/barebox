@@ -1,6 +1,13 @@
 #!/bin/sh
 
-global.bootm.image=/boot/uImage
-global.bootm.oftree=/boot/oftree
-#global.bootm.initrd=<path to initrd>
+global.bootm.image=/boot/zImage
+if [ global.board.variant = "boneblackwireless" ]
+then
+    global.bootm.oftree=/boot/dtbs/dairytestcolour-bbbw.dtb
+else
+    global.bootm.oftree=/boot/dtbs/dairytestcolour.dtb
+fi
 global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootfstype=ext4 rootwait"
+
+global.linux.bootargs.dyn.video="video=lcdc-1024x600-16M@60"
+global.linux.bootargs.dyn.optargs="coherent_pool=1M fsck.mode=auto"
