@@ -1,0 +1,13 @@
+#!/bin/sh
+
+memcmp -b -s /dev/eeprom0 -d /env/data/bbb-eeprom-0x12 0x12 0x00 2
+result=$?
+echo $result
+
+if [ $result = 0 ]
+then
+        echo "Beaglebone Wireless detected"
+        global.board.variant=boneblackwireless
+else
+        echo "Beaglebone Black (non-wireless) detected"
+fi
