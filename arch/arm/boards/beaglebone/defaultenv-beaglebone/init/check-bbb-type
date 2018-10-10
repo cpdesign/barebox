@@ -1,6 +1,6 @@
 #!/bin/sh
 
-memcmp -b -s /dev/eeprom0 -d /env/data/bbb-eeprom-0x12 0x12 0x00 2
+memcmp -b -s /dev/eeprom0 -d /env/data/bbb-eeprom-0x0C 0x0c 0x00 2
 result=$?
 echo $result
 
