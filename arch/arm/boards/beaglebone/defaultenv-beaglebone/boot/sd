@@ -9,5 +9,5 @@ else
 fi
 global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootfstype=ext4 rootwait"
 
-global.linux.bootargs.dyn.video="video=lcdc-1024x600-16M@60"
+global.linux.bootargs.dyn.video="video=lcdc-1024x600-16M"
 global.linux.bootargs.dyn.optargs="coherent_pool=1M fsck.mode=auto"
