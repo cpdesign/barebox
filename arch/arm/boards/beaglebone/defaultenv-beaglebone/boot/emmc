@@ -1,7 +1,7 @@
 #!/bin/sh
 
 global.bootm.image=/boot/zImage
-if [ global.board.variant = "boneblackwireless" ]
+if [ $global.board.variant = "boneblackwireless" ]
 then
     global.bootm.oftree=/boot/dtbs/dairytestcolour-bbbw.dtb
 else
