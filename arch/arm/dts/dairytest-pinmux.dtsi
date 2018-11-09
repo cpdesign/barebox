@@ -1,0 +1,9 @@
+
+&am33xx_pinmux {
+    flush_pins: flush_pins {
+		pinctrl-single,pins = <
+			0x7c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_csn0, GPIO1_29, J8,p26 */
+			0x8c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_clk_mux0, GPIO2_1, J8,p18 */
+		>;
+    };
+};

@@ -11,6 +11,7 @@
 #include "am33xx-strip.dtsi"
 #include "am33xx-clocks-strip.dtsi"
 #include "am335x-bone-common-strip.dtsi"
+#include "dairytest-pinmux.dtsi"
 
 / {
 	model = "TI AM335x BeagleBone";
